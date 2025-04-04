@@ -1,9 +1,9 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css';
-import Welcome from './pages/Welcome';
-import PhotoCapture from './pages/PhotoCapture';
-import Chat from './pages/Chat';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "./App.css";
+import Welcome from "./pages/Welcome";
+import PhotoCapture from "./pages/PhotoCapture";
+import Chat from "./pages/Chat";
 
 function App() {
   return (
@@ -19,4 +19,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;
