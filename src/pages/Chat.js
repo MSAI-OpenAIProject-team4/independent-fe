@@ -21,6 +21,49 @@ function Chat() {
   const apiVersion = "2024-05-01-preview";
   const deploymentName = "independent-gpt4o"; // This must match your deployment name
 
+  //Azure Speech 설정
+  const speechKey = process.env["AZURE_SPEECH_KEY"] || "";
+  const speechRegion = process.env["AZURE_SPEECH_REGION"] || "westeurope";
+
+  // TTS 함수
+  const speakTextWithAzureTTS = async (text) => {
+    if (!speechKey || !speechRegion) {
+      console.error("Azure Speech 키 또는 리전이 설정되지 않았습니다.");
+      return;
+    }
+
+    const url = `https://${speechRegion}.tts.speech.microsoft.com/cognitiveservices/v1`;
+
+    const ssml = `
+      <speak version='1.0' xml:lang='ko-KR'>
+        <voice name='ko-KR-SunHiNeural'>${text}</voice>
+      </speak>`;
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/ssml+xml",
+          "Ocp-Apim-Subscription-Key": speechKey,
+          "X-Microsoft-OutputFormat": "audio-16khz-32kbitrate-mono-mp3",
+        },
+        body: ssml,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Azure TTS 요청 실패: ${response.status}`);
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audio.play();
+    } catch (error) {
+      console.error("TTS 에러:", error);
+    }
+  };
+
+  // chating 함수
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (inputMessage.trim() === "") return;
@@ -62,6 +105,9 @@ function Chat() {
 
       const botResponse = response.data.choices[0].message.content;
       setMessages((prev) => [...prev, { text: botResponse, isUser: false }]);
+
+      // 시스템 메시지를 TTS로 읽어줌
+      speakTextWithAzureTTS(botResponse);
     } catch (error) {
       console.error("OpenAI 오류:", error);
       setMessages((prev) => [
