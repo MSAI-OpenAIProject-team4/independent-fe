@@ -7,7 +7,7 @@ function Chat() {
   const navigate = useNavigate();
   const [messages, setMessages] = useState([
     {
-      text: "안녕하세요! 저는 독립운동가 000입니다. 오늘 어떤 이야기를 나누고 싶으신가요?",
+      text: "안녕하시오! 나는 독립운동가 000이오. 오늘 어떤 이야기를 나누고 싶소? 독립운동과 관련하여 궁금한 것이 있으면 질문해 주시오",
       isUser: false,
     },
   ]);
@@ -34,7 +34,11 @@ function Chat() {
         `${endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${apiVersion}`,
         {
           messages: [
-            { role: "system", content: "당신은 친절한 독립운동가입니다." },
+            {
+              role: "system",
+              content:
+                "너는 대한민국 독립운동가야. 독립운동가라고 생각하고 옛날 한국인의 말투로 대답해줘. '하오체'로 대답해주면 돼.",
+            },
             ...messages.map((m) => ({
               role: m.isUser ? "user" : "assistant",
               content: m.text,
@@ -42,7 +46,11 @@ function Chat() {
             { role: "user", content: inputMessage },
           ],
           temperature: 0.7,
-          max_tokens: 1000,
+          max_tokens: 800,
+          top_p: 0.95,
+          frequency_penalty: 0,
+          presence_penalty: 0,
+          stop: null,
         },
         {
           headers: {
@@ -58,7 +66,7 @@ function Chat() {
       console.error("OpenAI 오류:", error);
       setMessages((prev) => [
         ...prev,
-        { text: "오류가 발생했어요. 다시 시도해주세요.", isUser: false },
+        { text: "오류가 발생했소. 다시 시도해보시오.", isUser: false },
       ]);
     }
   };
