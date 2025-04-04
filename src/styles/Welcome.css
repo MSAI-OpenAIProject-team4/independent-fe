@@ -1,0 +1,155 @@
+/* 폰트 설정 */
+@font-face {
+  font-family: 'PAK YONG JUN';
+  src: url('../fonts/Pak_Yong_jun.ttf') format('truetype');
+}
+
+.welcome {
+  width: 100%;
+  min-height: 100vh;
+  background: url('../../public/background.png') no-repeat center center fixed;
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.chat-button {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  font-family: 'PAK YONG JUN', sans-serif;
+  font-size: 1.2rem;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 50px;
+  background-color: #333;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.chat-button:hover {
+  background-color: #555;
+  transform: scale(1.05);
+}
+
+/* 컨텐츠 스타일 */
+.content-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  cursor: pointer;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-box {
+  text-align: center;
+}
+
+.profile-image {
+  width: 300px;
+  height: 300px;
+  margin: 0 auto 2rem;
+  border-radius: 40%;
+  overflow: hidden;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+}
+
+.profile-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.text-content {
+  margin-top: 1.5rem;
+}
+
+.description {
+  font-family: 'PAK YONG JUN', sans-serif;
+  font-size: 2.5rem;
+  color: #666;
+  line-height: 1.8;
+  margin: 0.5rem 0;
+  word-break: keep-all;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.fade-in-text {
+  animation: fadeInText 0.8s ease-out forwards;
+  animation-delay: calc(var(--index) * 1.5s);
+}
+
+@keyframes fadeInText {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .content-container {
+    margin: 2rem auto;
+  }
+  
+  .description {
+    font-size: 1.8rem;
+  }
+}
+
+/* 클릭 유도 애니메이션 */
+.content-container::after {
+  content: "클릭하여 계속하기";
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.9rem;
+  color: #666;
+  opacity: 0.7;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}
+
+.start-button {
+  font-family: 'PAK YONG JUN', sans-serif;
+  font-size: 1.2rem;
+  padding: 1rem 2rem;
+  margin-top: 2rem;
+  border: none;
+  border-radius: 50px;
+  background-color: #333;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0;
+}
+
+.start-button:hover {
+  background-color: #555;
+  transform: scale(1.05);
+} 
