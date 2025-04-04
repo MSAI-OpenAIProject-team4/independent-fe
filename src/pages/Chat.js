@@ -69,6 +69,7 @@ function Chat() {
     if (inputMessage.trim() === "") return;
 
     const userMessage = { text: inputMessage, isUser: true };
+    const updatedMessages = [...messages, userMessage]; // 최신 메시지 목록을 따로 관리
     setMessages((prev) => [...prev, userMessage]);
     setInputMessage("");
 
