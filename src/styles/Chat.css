@@ -4,7 +4,8 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  background: url('../../public/background_chat.png') no-repeat center center fixed;
+  background: url("../../public/background_chat.png") no-repeat center center
+    fixed;
   background-size: cover;
   justify-content: flex-end;
 }
@@ -13,7 +14,7 @@
   position: absolute;
   top: 2rem;
   left: 2rem;
-  font-family: 'PAK YONG JUN', sans-serif;
+  font-family: "PAK YONG JUN", sans-serif;
   font-size: 1.2rem;
   padding: 0.8rem 1.5rem;
   border: none;
@@ -55,7 +56,7 @@
   max-width: 70%;
   padding: 1.5rem;
   border-radius: 20px;
-  font-family: 'PAK YONG JUN', sans-serif;
+  font-family: "PAK YONG JUN", sans-serif;
   font-size: 1.2rem;
   line-height: 1.5;
   word-break: keep-all;
@@ -63,7 +64,8 @@
 }
 
 .message.user {
-  background-color: rgba(255, 255, 255, 0.9);
+  /* background-color: rgba(255, 255, 255, 0.9); */
+  background-color: #fef6e1;
   color: #333;
   align-self: flex-end;
   border-bottom-right-radius: 5px;
@@ -71,20 +73,21 @@
 }
 
 .message.user::after {
-  content: '';
+  content: "";
   position: absolute;
   right: -50px;
   top: 50%;
   transform: translateY(-50%);
   width: 40px;
   height: 40px;
-  background: url('../../public/user-avatar.png') no-repeat center;
+  background: url("../../public/user-avatar.png") no-repeat center;
   background-size: cover;
   border-radius: 50%;
 }
 
 .message.bot {
-  background-color: rgba(255, 255, 255, 0.9);
+  /* background-color: rgba(255, 255, 255, 0.9); */
+  background-color: #eef5fd;
   color: #333;
   align-self: flex-start;
   border-bottom-left-radius: 5px;
@@ -92,14 +95,14 @@
 }
 
 .message.bot::before {
-  content: '';
+  content: "";
   position: absolute;
   left: -50px;
   top: 50%;
   transform: translateY(-50%);
   width: 40px;
   height: 40px;
-  background: url('../../public/independence-fighter.png') no-repeat center;
+  background: url("../../public/independence-fighter.png") no-repeat center;
   background-size: cover;
   border-radius: 50%;
 }
@@ -118,7 +121,7 @@
   padding: 0.8rem 1rem;
   border: none;
   background: transparent;
-  font-family: 'PAK YONG JUN', sans-serif;
+  font-family: "PAK YONG JUN", sans-serif;
   font-size: 1rem;
   outline: none;
 }
@@ -133,7 +136,7 @@
   border-radius: 25px;
   background-color: #333;
   color: white;
-  font-family: 'PAK YONG JUN', sans-serif;
+  font-family: "PAK YONG JUN", sans-serif;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -165,4 +168,4 @@
 
 .flag-icon:hover {
   transform: scale(1.1);
-} 
+}
