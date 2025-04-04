@@ -24,8 +24,3 @@ npm install
 # 개발 서버 실행
 npm start
 ```
-
-## 팀원
-- Frontend 개발자
-- AI/ML 엔지니어
-- UI/UX 디자이너
