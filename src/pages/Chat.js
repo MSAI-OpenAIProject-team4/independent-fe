@@ -14,17 +14,36 @@ function Chat({ language, onLanguageChange }) {
     },
   ]);
   const [inputMessage, setInputMessage] = useState("");
+  const [isTTSEnabled, setIsTTSEnabled] = useState(true);
+  const [currentAudio, setCurrentAudio] = useState(null);
+  const [captions] = useState([]);
 
   //////////////////////각종 key/////////////////////////
 
-  // Azure 연결
+  // Azure OpenAI 설정
+  const endpoint = process.env.REACT_APP_AZURE_OPENAI_ENDPOINT;
+  const apiKey = process.env.REACT_APP_AZURE_OPENAI_API_KEY;
+  const apiVersion = process.env.REACT_APP_AZURE_OPENAI_API_VERSION;
+  const deploymentName = process.env.REACT_APP_AZURE_OPENAI_DEPLOYMENT_NAME;
 
-  const [currentAudio, setCurrentAudio] = useState(null);
+  // AI Search 설정
+  const aisearch_endpoint = process.env.REACT_APP_AZURE_AI_SEARCH_ENDPOINT;
+  const aisearch_key = process.env.REACT_APP_AZURE_AI_SEARCH_API_KEY;
+  const aisearch_indexName = process.env.REACT_APP_AZURE_AI_SEARCH_INDEX;
+  const aisearch_semantic = process.env.REACT_APP_AZURE_AI_SEARCH_SEMANTIC;
+
+  // Azure Speech 설정
+  const speechKey = process.env.REACT_APP_AZURE_SPEECH_KEY;
+  const speechRegion = process.env.REACT_APP_AZURE_SPEECH_REGION;
+
+  // 메시지가 변경될 때마다 스크롤을 최신 메시지로 이동
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   // TTS 함수
   const speakTextWithAzureTTS = async (text) => {
-    if (!speechKey || !speechRegion) {
-      console.error("Azure Speech 키 또는 리전이 설정되지 않았습니다.");
+    if (!isTTSEnabled || !speechKey || !speechRegion) {
       return;
     }
 
@@ -38,11 +57,7 @@ function Chat({ language, onLanguageChange }) {
 
     const ssml = `
       <speak version='1.0' xml:lang='ko-KR'>
-        <voice name='ko-KR-HyunsuMultilingualNeural'>
-        <prosody rate="1.3">
-         ${text}
-        </prosody>
-        </voice>
+        <voice name='ko-KR-SunHiNeural'>${text}</voice>
       </speak>`;
 
     try {
@@ -63,11 +78,18 @@ function Chat({ language, onLanguageChange }) {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
-      // 새 오디오 재생 시작 전, 상태에 등록
       setCurrentAudio(audio);
       audio.play();
     } catch (error) {
       console.error("TTS 에러:", error);
+    }
+  };
+
+  const handleTTSButtonClick = () => {
+    setIsTTSEnabled(!isTTSEnabled);
+    if (!isTTSEnabled && currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
     }
   };
 
@@ -150,8 +172,6 @@ function Chat({ language, onLanguageChange }) {
       const botResponse = response.data.choices[0].message.content;
       setMessages(prev => [...prev, { text: botResponse, isUser: false }]);
       
-      // 봇의 응답에서 키워드 찾기
-      findKeywordsAndAddCaptions(botResponse);
 
       // TTS로 읽어주기
       speakTextWithAzureTTS(botResponse);
@@ -195,6 +215,13 @@ function Chat({ language, onLanguageChange }) {
           </button>
         </form>
       </div>
+      <button 
+        className={`tts-button ${isTTSEnabled ? 'active' : ''}`}
+        onClick={handleTTSButtonClick}
+        title={isTTSEnabled ? "TTS 끄기" : "TTS 켜기"}
+      >
+        {isTTSEnabled ? "🔊" : "🔇"}
+      </button>
       <div className="caption-container">
         {captions.map((caption, index) => (
           <div key={index} className="caption-item">
