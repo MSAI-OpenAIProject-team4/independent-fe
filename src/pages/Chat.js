@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Chat.css";
 import axios from "axios";
+import MenuComponent from "../components/MenuComponent";
 
-function Chat() {
+function Chat({ language, onLanguageChange }) {
   const navigate = useNavigate();
+  const messagesEndRef = useRef(null);
   const [messages, setMessages] = useState([
     {
       text: "안녕하시오! 나는 독립운동가 000이오. 오늘 어떤 이야기를 나누고 싶소? 독립운동과 관련하여 궁금한 것이 있으면 질문해 주시오",
@@ -12,17 +14,36 @@ function Chat() {
     },
   ]);
   const [inputMessage, setInputMessage] = useState("");
+  const [isTTSEnabled, setIsTTSEnabled] = useState(true);
+  const [currentAudio, setCurrentAudio] = useState(null);
+  const [captions] = useState([]);
 
   //////////////////////각종 key/////////////////////////
 
-  // Azure 연결
+  // Azure OpenAI 설정
+  const endpoint = process.env.REACT_APP_AZURE_OPENAI_ENDPOINT;
+  const apiKey = process.env.REACT_APP_AZURE_OPENAI_API_KEY;
+  const apiVersion = process.env.REACT_APP_AZURE_OPENAI_API_VERSION;
+  const deploymentName = process.env.REACT_APP_AZURE_OPENAI_DEPLOYMENT_NAME;
 
-  const [currentAudio, setCurrentAudio] = useState(null);
+  // AI Search 설정
+  const aisearch_endpoint = process.env.REACT_APP_AZURE_AI_SEARCH_ENDPOINT;
+  const aisearch_key = process.env.REACT_APP_AZURE_AI_SEARCH_API_KEY;
+  const aisearch_indexName = process.env.REACT_APP_AZURE_AI_SEARCH_INDEX;
+  const aisearch_semantic = process.env.REACT_APP_AZURE_AI_SEARCH_SEMANTIC;
+
+  // Azure Speech 설정
+  const speechKey = process.env.REACT_APP_AZURE_SPEECH_KEY;
+  const speechRegion = process.env.REACT_APP_AZURE_SPEECH_REGION;
+
+  // 메시지가 변경될 때마다 스크롤을 최신 메시지로 이동
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   // TTS 함수
   const speakTextWithAzureTTS = async (text) => {
-    if (!speechKey || !speechRegion) {
-      console.error("Azure Speech 키 또는 리전이 설정되지 않았습니다.");
+    if (!isTTSEnabled || !speechKey || !speechRegion) {
       return;
     }
 
@@ -36,11 +57,7 @@ function Chat() {
 
     const ssml = `
       <speak version='1.0' xml:lang='ko-KR'>
-        <voice name='ko-KR-HyunsuMultilingualNeural'>
-        <prosody rate="1.3">
-         ${text}
-        </prosody>
-        </voice>
+        <voice name='ko-KR-SunHiNeural'>${text}</voice>
       </speak>`;
 
     try {
@@ -61,7 +78,6 @@ function Chat() {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
-      // 새 오디오 재생 시작 전, 상태에 등록
       setCurrentAudio(audio);
       audio.play();
     } catch (error) {
@@ -69,13 +85,23 @@ function Chat() {
     }
   };
 
-  // chating 함수
+  const handleTTSButtonClick = () => {
+    setIsTTSEnabled(!isTTSEnabled);
+    if (!isTTSEnabled && currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    }
+  };
+
+  const handleBackClick = () => {
+    navigate("/");
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (inputMessage.trim() === "") return;
 
     const userMessage = { text: inputMessage, isUser: true };
-    const updatedMessages = [...messages, userMessage]; // 최신 메시지 목록을 따로 관리
     setMessages((prev) => [...prev, userMessage]);
     setInputMessage("");
 
@@ -146,7 +172,7 @@ function Chat() {
       const botResponse = response.data.choices[0].message.content;
       setMessages((prev) => [...prev, { text: botResponse, isUser: false }]);
 
-      // 시스템 메시지를 TTS로 읽어줌
+      // TTS로 읽어주기
       speakTextWithAzureTTS(botResponse);
     } catch (error) {
       console.error("OpenAI 오류:", error);
@@ -157,20 +183,12 @@ function Chat() {
     }
   };
 
-  const handleBackClick = () => {
-    navigate("/");
-  };
-
   return (
     <div className="chat">
+      <MenuComponent onLanguageChange={onLanguageChange} />
       <button className="back-button" onClick={handleBackClick}>
         뒤로가기
       </button>
-      <div className="flag-icons">
-        <img src="/kr-flag.png" alt="한국어" className="flag-icon" />
-        <img src="/us-flag.png" alt="English" className="flag-icon" />
-        <img src="/jp-flag.png" alt="日本語" className="flag-icon" />
-      </div>
       <div className="chat-container">
         <div className="messages">
           {messages.map((message, index) => (
@@ -181,6 +199,7 @@ function Chat() {
               {message.text}
             </div>
           ))}
+          <div ref={messagesEndRef} />
         </div>
         <form className="input-form" onSubmit={handleSendMessage}>
           <input
@@ -194,6 +213,21 @@ function Chat() {
             전송
           </button>
         </form>
+      </div>
+      <button
+        className={`tts-button ${isTTSEnabled ? "active" : ""}`}
+        onClick={handleTTSButtonClick}
+        title={isTTSEnabled ? "TTS 끄기" : "TTS 켜기"}
+      >
+        {isTTSEnabled ? "🔊" : "🔇"}
+      </button>
+      <div className="caption-container">
+        {captions.map((caption, index) => (
+          <div key={index} className="caption-item">
+            <div className="caption-title">{caption.title}</div>
+            <div className="caption-content">{caption.content}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
