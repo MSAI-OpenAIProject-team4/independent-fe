@@ -2,12 +2,20 @@
   width: 100%;
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: url('../../public/background_game.jpg') no-repeat center center fixed;
+  position: relative;
+  background: url("../../public/background_game.jpg") no-repeat center center fixed;
   background-size: cover;
-  padding: 2rem;
+}
+
+/* 메뉴 컴포넌트 스타일 */
+.game-container .menu-component {
+  position: fixed !important;
+  top: 2rem !important;
+  left: 2rem !important;
+  z-index: 9999 !important;
+  transform: none !important;
+  margin: 0 !important;
+  display: block !important;
 }
 
 .game-container h1 {
@@ -18,10 +26,12 @@
 }
 
 .game-content {
+  width: 800px;
+  margin: 0 auto;
   padding: 2rem;
-  text-align: center;
-  width: 90%;
-  max-width: 1000px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  margin-top: 6rem;
 }
 
 .game-content p {
@@ -30,87 +40,194 @@
   color: #666;
 }
 
+/* 선택 화면 스타일 */
+.scene-selection {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.scene-option {
+  flex: 1;
+  padding: 2rem;
+  background-color: rgba(248, 249, 250, 0.9);
+  border: 2px solid #dee2e6;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.scene-option::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+  transition: all 0.3s ease;
+}
+
+.scene-option[data-scene="marchFirst"]::before {
+  background-image: url("../../public/3_1.png");
+}
+
+.scene-option[data-scene="harlbin"]::before {
+  background-image: url("../../public/haulbin.png");
+}
+
+.scene-option:hover::before {
+  transform: scale(1.1);
+}
+
+.scene-option h2 {
+  font-family: 'PAK YONG JUN', sans-serif;
+  font-size: 1.8rem;
+  color: #fff;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+.scene-option p {
+  font-size: 1.1rem;
+  color: #fff;
+  line-height: 1.5;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
 .scene-header {
   text-align: center;
   margin-bottom: 2rem;
+}
+
+.scene-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-family: "PAK YONG JUN", sans-serif;
 }
 
 .scene-info {
   display: flex;
   justify-content: center;
   gap: 2rem;
-  font-family: 'PAK YONG JUN', sans-serif;
+  font-size: 1.2rem;
   color: #666;
 }
 
 .scene-description {
-  font-size: 1.2rem;
-  line-height: 1.8;
-  color: #333;
   margin-bottom: 2rem;
-  padding: 1.5rem;
-  background-color: rgba(255, 255, 255, 0.8);
-  border-radius: 10px;
+  font-size: 1.2rem;
+  line-height: 1.6;
 }
 
 .choices-container {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
-  margin: 2rem 0;
+  margin-bottom: 2rem;
 }
 
 .choice-button {
-  font-family: 'PAK YONG JUN', sans-serif;
-  font-size: 1.1rem;
-  padding: 1.5rem;
-  background-color: rgba(51, 51, 51, 0.8);
-  color: white;
-  border: none;
+  padding: 1rem 2rem;
+  background-color: #f8f9fa;
+  border: 2px solid #dee2e6;
   border-radius: 10px;
+  font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  text-align: left;
 }
 
 .choice-button:hover {
-  background-color: rgba(51, 51, 51, 0.9);
-  transform: translateY(-2px);
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+/* 선택 결과 스타일 */
+.choice-result {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: #e9ecef;
+  border-radius: 10px;
+  border-left: 5px solid #495057;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.choice-result p {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: #495057;
+  font-style: italic;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .historical-context {
-  background-color: rgba(245, 245, 245, 0.9);
+  margin-top: 2rem;
   padding: 1.5rem;
+  background-color: #f8f9fa;
   border-radius: 10px;
-  margin: 2rem 0;
 }
 
 .historical-context h3 {
-  font-family: 'PAK YONG JUN', sans-serif;
-  color: #333;
   margin-bottom: 1rem;
+  color: #495057;
+}
+
+.historical-context p {
+  line-height: 1.6;
+  color: #666;
 }
 
 .back-button {
-  font-family: 'PAK YONG JUN', sans-serif;
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
   padding: 0.8rem 1.5rem;
-  background-color: transparent;
-  border: 2px solid #333;
-  color: #333;
-  border-radius: 50px;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 5px;
   cursor: pointer;
+  font-family: "PAK YONG JUN", sans-serif;
   transition: all 0.3s ease;
-  margin-top: 2rem;
 }
 
 .back-button:hover {
-  background-color: #333;
-  color: white;
+  background-color: #555;
+  transform: scale(1.05);
 }
 
 @media (max-width: 768px) {
   .game-content {
     width: 95%;
     padding: 1.5rem;
+  }
+
+  .scene-selection {
+    flex-direction: column;
   }
 
   .choices-container {
