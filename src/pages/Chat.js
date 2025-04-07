@@ -13,6 +13,8 @@ function Chat() {
   ]);
   const [inputMessage, setInputMessage] = useState("");
 
+  //////////////////////각종 key/////////////////////////
+
   // Azure 연결
 
   const [currentAudio, setCurrentAudio] = useState(null);
