@@ -2,8 +2,9 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import * as speechsdk from "microsoft-cognitiveservices-speech-sdk";
 import "../styles/Welcome.css";
+import MenuComponent from '../components/MenuComponent';
 
-function Welcome() {
+function Welcome({ language, onLanguageChange }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [key, setKey] = useState(0);
   const [hasInteracted, setHasInteracted] = useState(false);
@@ -108,6 +109,7 @@ function Welcome() {
 
   return (
     <div className="welcome">
+      <MenuComponent onLanguageChange={onLanguageChange} />
       <button className="chat-button" onClick={handleChatClick}>
         채팅하기
       </button>
