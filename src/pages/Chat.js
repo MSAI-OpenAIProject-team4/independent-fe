@@ -14,22 +14,20 @@ function Chat() {
   const [inputMessage, setInputMessage] = useState("");
 
   // Azure 연결
-  const endpoint =
-    process.env["AZURE_OPENAI_ENDPOINT"] ||
-    "https://independentchat2.openai.azure.com/";
-  const apiKey = process.env["AZURE_OPENAI_API_KEY"] || "";
-  const apiVersion = "2024-05-01-preview";
-  const deploymentName = "independent-gpt4o"; // This must match your deployment name
 
-  //Azure Speech 설정
-  const speechKey = process.env["AZURE_SPEECH_KEY"] || "";
-  const speechRegion = process.env["AZURE_SPEECH_REGION"] || "westeurope";
+  const [currentAudio, setCurrentAudio] = useState(null);
 
   // TTS 함수
   const speakTextWithAzureTTS = async (text) => {
     if (!speechKey || !speechRegion) {
       console.error("Azure Speech 키 또는 리전이 설정되지 않았습니다.");
       return;
+    }
+
+    // 이전 재생 중인 오디오가 있다면 중단
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
     }
 
     const url = `https://${speechRegion}.tts.speech.microsoft.com/cognitiveservices/v1`;
@@ -57,6 +55,8 @@ function Chat() {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
+      // 새 오디오 재생 시작 전, 상태에 등록
+      setCurrentAudio(audio);
       audio.play();
     } catch (error) {
       console.error("TTS 에러:", error);
@@ -90,11 +90,44 @@ function Chat() {
             { role: "user", content: inputMessage },
           ],
           temperature: 0.7,
-          max_tokens: 800,
+          max_tokens: 2000,
           top_p: 0.95,
           frequency_penalty: 0,
           presence_penalty: 0,
           stop: null,
+
+          // ✅ AI Search 확장 옵션 추가
+          // azure_extension_options: {
+          //   extensions: [
+          //     {
+          //       type: "AzureCognitiveSearch",
+          //       endpoint: aisearch_endpoint,
+          //       key: aisearch_key,
+          //       indexName: aisearch_indexName,
+          //     },
+          //   ],
+          // },
+          data_sources: [
+            {
+              type: "azure_search",
+              parameters: {
+                endpoint: aisearch_endpoint,
+                index_name: aisearch_indexName,
+                semantic_configuration: aisearch_semantic,
+                query_type: "semantic",
+                fields_mapping: {},
+                in_scope: true,
+                filter: null,
+                strictness: 5,
+                top_n_documents: 5,
+                authentication: {
+                  type: "api_key",
+                  key: aisearch_key,
+                },
+                key: aisearch_key,
+              },
+            },
+          ],
         },
         {
           headers: {
