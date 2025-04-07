@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Chat.css";
 import axios from "axios";
+import MenuComponent from '../components/MenuComponent';
 
-function Chat() {
+function Chat({ language, onLanguageChange }) {
   const navigate = useNavigate();
+  const messagesEndRef = useRef(null);
   const [messages, setMessages] = useState([
     {
       text: "안녕하시오! 나는 독립운동가 000이오. 오늘 어떤 이야기를 나누고 싶소? 독립운동과 관련하여 궁금한 것이 있으면 질문해 주시오",
@@ -69,14 +71,16 @@ function Chat() {
     }
   };
 
-  // chating 함수
+  const handleBackClick = () => {
+    navigate("/");
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (inputMessage.trim() === "") return;
 
     const userMessage = { text: inputMessage, isUser: true };
-    const updatedMessages = [...messages, userMessage]; // 최신 메시지 목록을 따로 관리
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setInputMessage("");
 
     try {
@@ -144,33 +148,28 @@ function Chat() {
       );
 
       const botResponse = response.data.choices[0].message.content;
-      setMessages((prev) => [...prev, { text: botResponse, isUser: false }]);
+      setMessages(prev => [...prev, { text: botResponse, isUser: false }]);
+      
+      // 봇의 응답에서 키워드 찾기
+      findKeywordsAndAddCaptions(botResponse);
 
-      // 시스템 메시지를 TTS로 읽어줌
+      // TTS로 읽어주기
       speakTextWithAzureTTS(botResponse);
     } catch (error) {
       console.error("OpenAI 오류:", error);
-      setMessages((prev) => [
+      setMessages(prev => [
         ...prev,
         { text: "오류가 발생했소. 다시 시도해보시오.", isUser: false },
       ]);
     }
   };
 
-  const handleBackClick = () => {
-    navigate("/");
-  };
-
   return (
     <div className="chat">
+      <MenuComponent onLanguageChange={onLanguageChange} />
       <button className="back-button" onClick={handleBackClick}>
         뒤로가기
       </button>
-      <div className="flag-icons">
-        <img src="/kr-flag.png" alt="한국어" className="flag-icon" />
-        <img src="/us-flag.png" alt="English" className="flag-icon" />
-        <img src="/jp-flag.png" alt="日本語" className="flag-icon" />
-      </div>
       <div className="chat-container">
         <div className="messages">
           {messages.map((message, index) => (
@@ -181,6 +180,7 @@ function Chat() {
               {message.text}
             </div>
           ))}
+          <div ref={messagesEndRef} />
         </div>
         <form className="input-form" onSubmit={handleSendMessage}>
           <input
@@ -194,6 +194,14 @@ function Chat() {
             전송
           </button>
         </form>
+      </div>
+      <div className="caption-container">
+        {captions.map((caption, index) => (
+          <div key={index} className="caption-item">
+            <div className="caption-title">{caption.title}</div>
+            <div className="caption-content">{caption.content}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
