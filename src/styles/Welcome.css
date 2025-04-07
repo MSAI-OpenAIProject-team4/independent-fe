@@ -4,6 +4,14 @@
   src: url('../fonts/Pak_Yong_jun.ttf') format('truetype');
 }
 
+/* 메뉴 버튼 스타일 */
+.menu-button {
+  position: fixed;
+  top: 2rem;
+  left: 2rem;
+  z-index: 1000;
+}
+
 .welcome {
   width: 100%;
   min-height: 100vh;
@@ -16,10 +24,18 @@
   position: relative;
 }
 
+/* 메뉴 컴포넌트 스타일 재정의 */
+.welcome .menu-component {
+  position: fixed !important;
+  top: 2rem !important;
+  left: 2rem !important;
+  right: auto !important;
+}
+
 .chat-button {
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
+  position: fixed !important;
+  top: 2rem !important;
+  right: 2rem !important;
   font-family: 'PAK YONG JUN', sans-serif;
   font-size: 1.2rem;
   padding: 0.8rem 1.5rem;
