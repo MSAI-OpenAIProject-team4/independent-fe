@@ -5,6 +5,7 @@ import Welcome from './pages/Welcome';
 import PhotoCapture from './pages/PhotoCapture';
 import Chat from './pages/Chat';
 import MatchResult from './pages/MatchResult';
+import IndependentGame from './pages/IndependentGame';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/photo" element={<PhotoCapture />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/result" element={<MatchResult />} />
+          <Route path="/game" element={<IndependentGame />} />
         </Routes>
       </div>
     </Router>

@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Chat.css";
 import axios from "axios";
+import MenuComponent from '../components/MenuComponent';
 
-function Chat() {
+function Chat({ language, onLanguageChange }) {
   const navigate = useNavigate();
+  const messagesEndRef = useRef(null);
   const [messages, setMessages] = useState([
     {
       text: "안녕하시오! 나는 독립운동가 000이오. 오늘 어떤 이야기를 나누고 싶소? 독립운동과 관련하여 궁금한 것이 있으면 질문해 주시오",
@@ -12,18 +14,75 @@ function Chat() {
     },
   ]);
   const [inputMessage, setInputMessage] = useState("");
+  const [captions, setCaptions] = useState([]);
+
+  // 특정 단어와 설명을 매핑하는 객체
+  const keywordMap = {
+    "3·1운동": {
+      title: "3·1 운동",
+      content: "1919년 3월 1일에 시작된 한국의 대표적인 독립운동. 민족 자결주의의 영향을 받아 전개된 반일 독립운동이다."
+    },
+    "3·1 운동": {
+      title: "3·1 운동",
+      content: "1919년 3월 1일에 시작된 한국의 대표적인 독립운동. 민족 자결주의의 영향을 받아 전개된 반일 독립운동이다."
+    },
+    "3·1만세운동": {
+      title: "3·1 만세운동",
+      content: "1919년 3월 1일에 시작된 한국의 대표적인 독립운동. 민족 자결주의의 영향을 받아 전개된 반일 독립운동이다."
+    },
+    "3·1 만세운동": {
+      title: "3·1 만세운동",
+      content: "1919년 3월 1일에 시작된 한국의 대표적인 독립운동. 민족 자결주의의 영향을 받아 전개된 반일 독립운동이다."
+    },
+    "3·1 만세 운동": {
+      title: "3·1 만세 운동",
+      content: "1919년 3월 1일에 시작된 한국의 대표적인 독립운동. 민족 자결주의의 영향을 받아 전개된 반일 독립운동이다."
+    },
+    "대한민국 임시정부": {
+      title: "대한민국 임시정부",
+      content: "1919년 4월 11일 상하이에서 수립된 망명정부. 독립운동의 중심 기구 역할을 했다."
+    },
+    "윤봉길": {
+      title: "윤봉길 의사",
+      content: "1908-1932, 한국의 독립운동가. 1932년 상하이 훙커우 공원에서 의거를 일으켰다."
+    }
+    // 더 많은 키워드를 추가할 수 있습니다.
+  };
+
+  // 메시지에서 특정 단어를 찾아 캡션을 추가하는 함수
+  const findKeywordsAndAddCaptions = (text) => {
+    const newCaptions = [];
+    Object.keys(keywordMap).forEach(keyword => {
+      if (text.includes(keyword)) {
+        newCaptions.push(keywordMap[keyword]);
+      }
+    });
+    if (newCaptions.length > 0) {
+      setCaptions(prev => [...new Set([...prev, ...newCaptions])]);
+    }
+  };
+
+  // 스크롤을 맨 아래로 이동시키는 함수
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // messages가 변경될 때마다 스크롤을 맨 아래로 이동
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // Azure 연결
   const endpoint =
-    process.env["AZURE_OPENAI_ENDPOINT"] ||
+    process.env.REACT_APP_AZURE_OPENAI_ENDPOINT ||
     "https://independentchat2.openai.azure.com/";
-  const apiKey = process.env["AZURE_OPENAI_API_KEY"] || "";
+  const apiKey = process.env.REACT_APP_AZURE_OPENAI_API_KEY || "";
   const apiVersion = "2024-05-01-preview";
   const deploymentName = "independent-gpt4o"; // This must match your deployment name
 
   //Azure Speech 설정
-  const speechKey = process.env["AZURE_SPEECH_KEY"] || "";
-  const speechRegion = process.env["AZURE_SPEECH_REGION"] || "westeurope";
+  const speechKey = process.env.REACT_APP_AZURE_SPEECH_KEY_3 || "";
+  const speechRegion = process.env.REACT_APP_AZURE_SPEECH_REGION_1 || "westeurope";
 
   // TTS 함수
   const speakTextWithAzureTTS = async (text) => {
@@ -63,14 +122,16 @@ function Chat() {
     }
   };
 
-  // chating 함수
+  const handleBackClick = () => {
+    navigate("/");
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (inputMessage.trim() === "") return;
 
     const userMessage = { text: inputMessage, isUser: true };
-    const updatedMessages = [...messages, userMessage]; // 최신 메시지 목록을 따로 관리
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setInputMessage("");
 
     try {
@@ -105,33 +166,28 @@ function Chat() {
       );
 
       const botResponse = response.data.choices[0].message.content;
-      setMessages((prev) => [...prev, { text: botResponse, isUser: false }]);
+      setMessages(prev => [...prev, { text: botResponse, isUser: false }]);
+      
+      // 봇의 응답에서 키워드 찾기
+      findKeywordsAndAddCaptions(botResponse);
 
-      // 시스템 메시지를 TTS로 읽어줌
+      // TTS로 읽어주기
       speakTextWithAzureTTS(botResponse);
     } catch (error) {
       console.error("OpenAI 오류:", error);
-      setMessages((prev) => [
+      setMessages(prev => [
         ...prev,
         { text: "오류가 발생했소. 다시 시도해보시오.", isUser: false },
       ]);
     }
   };
 
-  const handleBackClick = () => {
-    navigate("/");
-  };
-
   return (
     <div className="chat">
+      <MenuComponent onLanguageChange={onLanguageChange} />
       <button className="back-button" onClick={handleBackClick}>
         뒤로가기
       </button>
-      <div className="flag-icons">
-        <img src="/kr-flag.png" alt="한국어" className="flag-icon" />
-        <img src="/us-flag.png" alt="English" className="flag-icon" />
-        <img src="/jp-flag.png" alt="日本語" className="flag-icon" />
-      </div>
       <div className="chat-container">
         <div className="messages">
           {messages.map((message, index) => (
@@ -142,6 +198,7 @@ function Chat() {
               {message.text}
             </div>
           ))}
+          <div ref={messagesEndRef} />
         </div>
         <form className="input-form" onSubmit={handleSendMessage}>
           <input
@@ -155,6 +212,14 @@ function Chat() {
             전송
           </button>
         </form>
+      </div>
+      <div className="caption-container">
+        {captions.map((caption, index) => (
+          <div key={index} className="caption-item">
+            <div className="caption-title">{caption.title}</div>
+            <div className="caption-content">{caption.content}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
