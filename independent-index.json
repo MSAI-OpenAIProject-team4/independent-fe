@@ -1,0 +1,65 @@
+{
+  "name": "independent-index",
+  "fields": [
+    {
+      "name": "name",
+      "type": "Edm.String",
+      "key": true,
+      "analyzer": "ko.lucene"
+    },
+    {
+      "name": "hangle",
+      "type": "Edm.String",
+      "key": false,
+      "analyzer": "ko.lucene"
+    },
+    {
+      "name": "hanja",
+      "type": "Edm.String",
+      "key": false,
+      "analyzer": "ko.lucene"
+    },
+    {
+      "name": "adress",
+      "type": "Edm.String",
+      "key": false,
+      "analyzer": "ko.lucene"
+    },
+    {
+      "name": "type",
+      "type": "Edm.String",
+      "key": false,
+      "analyzer": "ko.lucene"
+    },
+    {
+      "name": "award",
+      "type": "Edm.String",
+      "key": false,
+      "analyzer": "ko.lucene"
+    },
+    {
+      "name": "activity",
+      "type": "Edm.String",
+      "key": false,
+      "analyzer": "ko.lucene"
+    },
+    {
+      "name": "content",
+      "type": "Edm.String",
+      "key": false,
+      "analyzer": "ko.lucene"
+    },
+    {
+      "name": "reference",
+      "type": "Edm.String",
+      "key": false,
+      "analyzer": "ko.lucene"
+    },
+    {
+      "name": "image_url",
+      "type": "Edm.String",
+      "key": false,
+      "analyzer": "ko.lucene"
+    }
+  ]
+}
