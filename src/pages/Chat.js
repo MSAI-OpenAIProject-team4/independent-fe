@@ -36,7 +36,11 @@ function Chat() {
 
     const ssml = `
       <speak version='1.0' xml:lang='ko-KR'>
-        <voice name='ko-KR-SunHiNeural'>${text}</voice>
+        <voice name='ko-KR-HyunsuMultilingualNeural'>
+        <prosody rate="1.3">
+         ${text}
+        </prosody>
+        </voice>
       </speak>`;
 
     try {
