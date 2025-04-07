@@ -38,8 +38,8 @@ function Welcome({ language, onLanguageChange }) {
   const speechConfig = useMemo(() => {
     try {
       const config = speechsdk.SpeechConfig.fromSubscription(
-        process.env.REACT_APP_AZURE_SPEECH_KEY_1,
-        process.env.REACT_APP_AZURE_SPEECH_REGION
+        process.env.REACT_APP_AZURE_SPEECH_KEY_WELCOME,
+        process.env.REACT_APP_AZURE_SPEECH_REGION_WELCOME
       );
       config.speechSynthesisVoiceName = "ko-KR-JiMinNeural";
       return config;
