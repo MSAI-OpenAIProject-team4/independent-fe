@@ -1,0 +1,124 @@
+.game-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: url('../../public/background_game.jpg') no-repeat center center fixed;
+  background-size: cover;
+  padding: 2rem;
+}
+
+.game-container h1 {
+  font-family: 'PAK YONG JUN', sans-serif;
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 2rem;
+}
+
+.game-content {
+  padding: 2rem;
+  text-align: center;
+  width: 90%;
+  max-width: 1000px;
+}
+
+.game-content p {
+  font-family: 'PAK YONG JUN', sans-serif;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.scene-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.scene-info {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  font-family: 'PAK YONG JUN', sans-serif;
+  color: #666;
+}
+
+.scene-description {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #333;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+}
+
+.choices-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.choice-button {
+  font-family: 'PAK YONG JUN', sans-serif;
+  font-size: 1.1rem;
+  padding: 1.5rem;
+  background-color: rgba(51, 51, 51, 0.8);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.choice-button:hover {
+  background-color: rgba(51, 51, 51, 0.9);
+  transform: translateY(-2px);
+}
+
+.historical-context {
+  background-color: rgba(245, 245, 245, 0.9);
+  padding: 1.5rem;
+  border-radius: 10px;
+  margin: 2rem 0;
+}
+
+.historical-context h3 {
+  font-family: 'PAK YONG JUN', sans-serif;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.back-button {
+  font-family: 'PAK YONG JUN', sans-serif;
+  padding: 0.8rem 1.5rem;
+  background-color: transparent;
+  border: 2px solid #333;
+  color: #333;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 2rem;
+}
+
+.back-button:hover {
+  background-color: #333;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .game-content {
+    width: 95%;
+    padding: 1.5rem;
+  }
+
+  .choices-container {
+    grid-template-columns: 1fr;
+  }
+
+  .scene-info {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+} 
