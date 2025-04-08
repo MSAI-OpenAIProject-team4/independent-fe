@@ -41,6 +41,14 @@ function Chat({ language, onLanguageChange }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // 👇 새 메시지가 추가될 때 마지막 메시지를 읽어주는 useEffect 추가!
+  useEffect(() => {
+    // 메시지가 비어있지 않고 마지막 메시지가 봇 메시지일 경우
+    if (messages.length > 0 && !messages[messages.length - 1].isUser) {
+      speakTextWithAzureTTS(messages[messages.length - 1].text);
+    }
+  }, [messages]);
+
   // TTS 함수
   const speakTextWithAzureTTS = async (text) => {
     if (!isTTSEnabled || !speechKey || !speechRegion) {
@@ -85,12 +93,24 @@ function Chat({ language, onLanguageChange }) {
     }
   };
 
+  //음소거 버튼
+
   const handleTTSButtonClick = () => {
-    setIsTTSEnabled(!isTTSEnabled);
-    if (!isTTSEnabled && currentAudio) {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-    }
+    setIsTTSEnabled((prev) => {
+      const nextState = !prev;
+
+      if (!nextState && currentAudio) {
+        // 음소거 상태로 변경할 때는 일시정지
+        currentAudio.pause();
+      } else if (nextState && currentAudio && currentAudio.paused) {
+        // 다시 소리 켤 때 이전 오디오가 있으면 이어서 재생
+        currentAudio
+          .play()
+          .catch((e) => console.error("오디오 재생 중 오류:", e));
+      }
+
+      return nextState;
+    });
   };
 
   const handleBackClick = () => {
@@ -173,7 +193,7 @@ function Chat({ language, onLanguageChange }) {
       setMessages((prev) => [...prev, { text: botResponse, isUser: false }]);
 
       // TTS로 읽어주기
-      speakTextWithAzureTTS(botResponse);
+      //speakTextWithAzureTTS(botResponse);
     } catch (error) {
       console.error("OpenAI 오류:", error);
       setMessages((prev) => [
