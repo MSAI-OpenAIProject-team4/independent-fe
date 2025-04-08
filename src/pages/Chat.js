@@ -16,7 +16,7 @@ function Chat({ language, onLanguageChange }) {
   const [inputMessage, setInputMessage] = useState("");
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
   const [currentAudio, setCurrentAudio] = useState(null);
-  const [captions] = useState([]);
+  const [captions, setCaptions] = useState([]);
 
   //////////////////////각종 key/////////////////////////
 
@@ -190,6 +190,18 @@ function Chat({ language, onLanguageChange }) {
       );
 
       const botResponse = response.data.choices[0].message.content;
+
+      // 주석 처리(참고 자료)
+      const citations =
+        response.data.choices[0].message.context?.citations || [];
+
+      const formattedCaptions = citations.map((c, idx) => ({
+        title: `doc${idx + 1}`,
+        content: c.content || "내용 없음",
+      }));
+
+      setCaptions(formattedCaptions);
+
       setMessages((prev) => [...prev, { text: botResponse, isUser: false }]);
 
       // TTS로 읽어주기
