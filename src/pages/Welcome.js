@@ -124,21 +124,9 @@ function Welcome({ language, onLanguageChange }) {
     }
   };
 
-  const handleChatClick = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current = null;
-    }
-    navigate("/chat");
-  };
-
   return (
     <div className="welcome">
       <MenuComponent onLanguageChange={onLanguageChange} />
-      <button className="chat-button" onClick={handleChatClick}>
-        채팅하기
-      </button>
       <div className="content-container" onClick={handleNextDialogue}>
         <div className="content-box">
           <div className="profile-image">

@@ -1,13 +1,26 @@
+/* 폰트 등록 */
+@font-face {
+  font-family: 'ChosunCentennial';
+  src: url('../fonts/ChosunCentennial.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* 기본 레이아웃 */
 .game-container {
+  position: relative;
   width: 100%;
   min-height: 100vh;
   display: flex;
-  position: relative;
   background: url("../../public/background_game.jpg") no-repeat center center fixed;
   background-size: cover;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'PAK YONG JUN', sans-serif;
 }
 
-/* 메뉴 컴포넌트 스타일 */
+/* 메뉴 컴포넌트 */
 .game-container .menu-component {
   position: fixed !important;
   top: 2rem !important;
@@ -18,165 +31,335 @@
   display: block !important;
 }
 
-.game-container h1 {
-  font-family: 'PAK YONG JUN', sans-serif;
+/* 게임 콘텐츠 영역 */
+.game-content {
+  width: 90%;
+  max-width: 1200px;
+  height: 90vh;
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 20px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* 헤더 스타일 */
+.scene-header {
+  text-align: center;
+  margin-bottom: 16px;
+  width: 100%;
+  padding: 20px;
+}
+
+.scene-header h1 {
   font-size: 2.5rem;
   color: #333;
-  margin-bottom: 2rem;
-}
-
-.game-content {
-  width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 20px;
-  margin-top: 6rem;
-}
-
-.game-content p {
+  margin-bottom: 10px;
   font-family: 'PAK YONG JUN', sans-serif;
-  font-size: 1.2rem;
-  color: #666;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* 선택 화면 스타일 */
-.scene-selection {
+/* 씬 정보 */
+.scene-info {
   display: flex;
-  gap: 2rem;
-  margin-top: 2rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.scene-info .date {
+  font-size: 1.4rem;
+  color: #4a90e2;
+  font-weight: bold;
+  padding: 8px 20px;
+  background-color: rgba(74, 144, 226, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.scene-info .key-figures {
+  font-size: 1.1rem;
+  color: #444;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 8px 15px;
+  border-radius: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 씬 선택 영역 */
+.scene-selection {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  width: 100%;
+  margin-top: 20px;
 }
 
 .scene-option {
-  flex: 1;
-  padding: 2rem;
-  background-color: rgba(248, 249, 250, 0.9);
-  border: 2px solid #dee2e6;
   border-radius: 15px;
+  padding: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
   min-height: 300px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  background-size: cover;
+  background-position: center;
 }
 
-.scene-option::before {
+.scene-option[data-scene="event_002"] {
+  background-image: url('../../public/3_1.png');
+  background-position: center 30%;
+}
+
+.scene-option[data-scene="event_003"] {
+  background-image: url('../../public/yun_bong_gil.png');
+  background-position: center 40%;
+}
+
+.scene-option[data-scene="event_001"] {
+  background-image: url('../../public/haulbin.png');
+  background-position: center 35%;
+}
+
+.scene-option:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.scene-option h2 {
+  font-size: 1.5rem;
+  color: #fff;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+  font-family: 'PAK YONG JUN', sans-serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.scene-option p {
+  font-size: 1rem;
+  color: #fff;
+  margin-bottom: 15px;
+  position: relative;
+  z-index: 1;
+  line-height: 1.4;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* 씬 설명 */
+.scene-description {
+  width: 100%;
+  padding: 35px;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  margin-bottom: 30px;
+  font-size: 1.6rem;
+  line-height: 1.8;
+  color: #333333;
+  box-shadow: 0 4px 15px rgba(8, 0, 255, 0.05);
+  border: 1px solid rgba(150, 0, 250, 0.1);
+  transition: all 0.3s ease;
+  font-family: 'ChosunCentennial', serif;
+}
+
+.scene-description p {
+  text-align: justify;
+  word-break: keep-all;
+  font-family: 'ChosunCentennial', serif;
+  letter-spacing: 0.02em;
+}
+
+/* 선택지 컨테이너 */
+.choices-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  width: 100%;
+  margin-top: 30px;
+}
+
+.choice-button {
+  padding: 20px 25px;
+  border: none;
+  border-radius: 12px;
+  background-color: #d15454;  /* 진한 붉은색 */
+  color: #FFF5E1;  /* 따뜻한 흰색 */
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'ChosunCentennial', sans-serif;
+  text-align: left;
+  line-height: 1.5;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(139, 0, 0, 0.2);
+  border: 1px solid rgba(139, 0, 0, 0.3);
+}
+
+.choice-button:hover {
+  background-color: #aa3030;  /* 좀 더 밝은 붉은색 */
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(139, 0, 0, 0.4);
+  color: #FFFFFF;
+}
+
+.choice-button:active {
+  transform: translateY(-1px);
+  background-color: #aa3030;  /* 더 진한 붉은색 */
+}
+
+/* 선택 결과 */
+.choice-result {
+  width: 100%;
+  padding: 35px;
+  background: url('../../public/choice_result.png') no-repeat center center;
+  background-size: cover;
+  border-radius: 15px;
+  margin-top: 30px;
+  text-align: left;
+  animation: fadeIn 0.8s ease-in-out;
+  font-family: 'ChosunCentennial', sans-serif;
+  position: relative;
+}
+
+.choice-result::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 15px;
+  z-index: 1;
+}
+
+.choice-text, .result-text, .result-impact {
+  position: relative;
+  z-index: 2;
+}
+
+.choice-text {
+  font-size: 1.5rem;
+  color: #000000e9;
+  margin-bottom: 25px;
+  font-weight: bold;
+  font-family: 'ChosunCentennial', sans-serif;
+  padding-left: 20px;
+  border-left: 3px solid #000000e9;
+}
+
+.result-text {
+  font-size: 1.4rem;
+  line-height: 1.8;
+  margin: 25px;
+  color: #333333;
+  font-family: 'ChosunCentennial', sans-serif;
+  padding: 20px;
+}
+
+.result-impact {
+  font-size: 1.3rem;
+  color: #d12929e9;
+  font-weight: bold;
+  margin-top: 20px;
+  font-family: 'ChosunCentennial', sans-serif;
+  padding: 15px 25px;
+  display: inline-block;
+  position: relative;
+}
+
+.result-impact::after {
+  content: '';
+  position: absolute;
   bottom: 0;
-  background-size: cover;
-  background-position: center;
-  z-index: -1;
-  transition: all 0.3s ease;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #000000e9 0%, rgba(0, 0, 0, 0.1) 100%);
 }
 
-.scene-option[data-scene="marchFirst"]::before {
-  background-image: url("../../public/3_1.png");
+/* 역사적 배경 */
+.historical-context {
+  width: 100%;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  margin-top: 20px;
 }
 
-.scene-option[data-scene="harlbin"]::before {
-  background-image: url("../../public/haulbin.png");
+.historical-context h3 {
+  color: #333;
+  margin-bottom: 10px;
+  font-family: 'ChosunCentennial', sans-serif;
 }
 
-.scene-option:hover::before {
-  transform: scale(1.1);
-}
-
-.scene-option h2 {
-  font-family: 'PAK YONG JUN', sans-serif;
-  font-size: 1.8rem;
-  color: #fff;
-  margin-bottom: 1rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  position: relative;
-}
-
-.scene-option p {
+.historical-context p {
   font-size: 1.1rem;
-  color: #fff;
-  line-height: 1.5;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-  position: relative;
-  background-color: rgba(0, 0, 0, 0.5);
-  padding: 1rem;
-  border-radius: 8px;
-}
-
-.scene-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.scene-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  font-family: "PAK YONG JUN", sans-serif;
-}
-
-.scene-info {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  font-size: 1.2rem;
+  line-height: 1.6;
   color: #666;
 }
 
-.scene-description {
-  margin-bottom: 2rem;
-  font-size: 1.2rem;
-  line-height: 1.6;
+/* 뒤로가기 버튼 */
+.game-back-button {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px 30px;
+  background-color: #d15454;
+  color: #FFF5E1;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: background-color 0.3s ease;
+  font-family: 'ChosunCentennial', sans-serif;
 }
 
-.choices-container {
+.game-back-button:hover {
+  background-color: #aa3030;
+}
+
+/* 로딩 상태 */
+.loading {
+  width: 100%;
+  text-align: center;
+  padding: 40px;
+  color: #666;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  align-items: center;
+  gap: 20px;
+  font-family: 'PAK YONG JUN', sans-serif;
 }
 
-.choice-button {
-  padding: 1rem 2rem;
-  background-color: #f8f9fa;
-  border: 2px solid #dee2e6;
-  border-radius: 10px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: left;
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #4a90e2;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
-.choice-button:hover {
-  background-color: #e9ecef;
-  border-color: #adb5bd;
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-/* 선택 결과 스타일 */
-.choice-result {
-  margin: 2rem 0;
-  padding: 1.5rem;
-  background-color: #e9ecef;
-  border-radius: 10px;
-  border-left: 5px solid #495057;
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-.choice-result p {
-  font-size: 1.2rem;
-  line-height: 1.6;
-  color: #495057;
-  font-style: italic;
-}
-
+/* 애니메이션 */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -184,58 +367,73 @@
   }
 }
 
-.historical-context {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background-color: #f8f9fa;
-  border-radius: 10px;
-}
-
-.historical-context h3 {
-  margin-bottom: 1rem;
-  color: #495057;
-}
-
-.historical-context p {
-  line-height: 1.6;
-  color: #666;
-}
-
-.back-button {
-  position: fixed;
-  top: 2rem;
-  right: 2rem;
-  padding: 0.8rem 1.5rem;
-  background-color: #333;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-family: "PAK YONG JUN", sans-serif;
-  transition: all 0.3s ease;
-}
-
-.back-button:hover {
-  background-color: #555;
-  transform: scale(1.05);
-}
-
+/* 반응형 디자인 */
 @media (max-width: 768px) {
-  .game-content {
-    width: 95%;
-    padding: 1.5rem;
-  }
-
   .scene-selection {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
   .choices-container {
     grid-template-columns: 1fr;
   }
 
-  .scene-info {
-    flex-direction: column;
-    gap: 0.5rem;
+  .game-content {
+    width: 95%;
+    padding: 20px;
   }
+
+  .scene-header h1 {
+    font-size: 2rem;
+  }
+
+  .scene-info {
+    font-size: 1rem;
+  }
+
+  .scene-description {
+    font-size: 1.1rem;
+    padding: 20px;
+  }
+
+  .choice-button {
+    font-size: 1.1rem;
+    padding: 15px 20px;
+  }
+
+  .result-text {
+    font-size: 1.1rem;
+  }
+}
+
+/* 에러 메시지 */
+.error-message {
+  width: 100%;
+  text-align: center;
+  padding: 40px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: 'PAK YONG JUN', sans-serif;
+}
+
+.error-message p {
+  font-size: 1.2rem;
+  color: #e74c3c;
+  margin-bottom: 20px;
+  font-family: 'PAK YONG JUN', sans-serif;
+}
+
+.error-message .back-button {
+  position: static;
+  transform: none;
+  display: inline-block;
+  margin-top: 20px;
+  background-color: #e74c3c;
+  transition: all 0.3s ease;
+}
+
+.error-message .back-button:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
 } 
