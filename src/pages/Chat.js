@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Chat.css";
 import axios from "axios";
+import Papa from "papaparse";
 import MenuComponent from "../components/MenuComponent";
 
 function Chat({ language, onLanguageChange }) {
@@ -17,58 +18,51 @@ function Chat({ language, onLanguageChange }) {
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
   const [currentAudio, setCurrentAudio] = useState(null);
   const [captions, setCaptions] = useState([]);
+  const [documents, setDocuments] = useState([]);
 
-  //////////////////////각종 key/////////////////////////
-
-  // Azure OpenAI 설정
+  // Azure 설정
   const endpoint = process.env.REACT_APP_AZURE_OPENAI_ENDPOINT;
   const apiKey = process.env.REACT_APP_AZURE_OPENAI_API_KEY;
   const apiVersion = process.env.REACT_APP_AZURE_OPENAI_API_VERSION;
   const deploymentName = process.env.REACT_APP_AZURE_OPENAI_DEPLOYMENT_NAME;
-
-  // AI Search 설정
-  const aisearch_endpoint = process.env.REACT_APP_AZURE_AI_SEARCH_ENDPOINT;
-  const aisearch_key = process.env.REACT_APP_AZURE_AI_SEARCH_API_KEY;
-  const aisearch_indexName = process.env.REACT_APP_AZURE_AI_SEARCH_INDEX;
-  const aisearch_semantic = process.env.REACT_APP_AZURE_AI_SEARCH_SEMANTIC;
-
-  // Azure Speech 설정
   const speechKey = process.env.REACT_APP_AZURE_SPEECH_KEY;
   const speechRegion = process.env.REACT_APP_AZURE_SPEECH_REGION;
 
-  // 메시지가 변경될 때마다 스크롤을 최신 메시지로 이동
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 👇 새 메시지가 추가될 때 마지막 메시지를 읽어주는 useEffect 추가!
   useEffect(() => {
     if (messages.length > 0 && !messages[messages.length - 1].isUser) {
-      // 이전 오디오 정지
       if (currentAudio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
-        setCurrentAudio(null); // 👈 이거 중요!
+        setCurrentAudio(null);
       }
-
       speakTextWithAzureTTS(messages[messages.length - 1].text);
     }
   }, [messages]);
 
-  // TTS 함수
-  const speakTextWithAzureTTS = async (text) => {
-    if (!isTTSEnabled || !speechKey || !speechRegion) {
-      return;
-    }
+  useEffect(() => {
+    fetch("/doklip.csv")
+      .then((response) => response.text())
+      .then((csvText) => {
+        Papa.parse(csvText, {
+          header: true,
+          complete: (results) => setDocuments(results.data),
+        });
+      });
+  }, []);
 
-    // 이전 재생 중인 오디오가 있다면 중단
+  const speakTextWithAzureTTS = async (text) => {
+    if (!isTTSEnabled || !speechKey || !speechRegion) return;
+
     if (currentAudio) {
       currentAudio.pause();
       currentAudio.currentTime = 0;
     }
 
     const url = `https://${speechRegion}.tts.speech.microsoft.com/cognitiveservices/v1`;
-
     const ssml = `
       <speak version='1.0' xml:lang='ko-KR'>
         <voice name='ko-KR-SunHiNeural'>${text}</voice>
@@ -85,10 +79,6 @@ function Chat({ language, onLanguageChange }) {
         body: ssml,
       });
 
-      if (!response.ok) {
-        throw new Error(`Azure TTS 요청 실패: ${response.status}`);
-      }
-
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
@@ -99,28 +89,34 @@ function Chat({ language, onLanguageChange }) {
     }
   };
 
-  //음소거 버튼
-
   const handleTTSButtonClick = () => {
     setIsTTSEnabled((prev) => {
       const nextState = !prev;
-
       if (!nextState && currentAudio) {
-        // 음소거 상태로 변경할 때는 일시정지
         currentAudio.pause();
-      } else if (nextState && currentAudio && currentAudio.paused) {
-        // 다시 소리 켤 때 이전 오디오가 있으면 이어서 재생
+      } else if (nextState && currentAudio?.paused) {
         currentAudio
           .play()
           .catch((e) => console.error("오디오 재생 중 오류:", e));
       }
-
       return nextState;
     });
   };
 
   const handleBackClick = () => {
     navigate("/");
+  };
+
+  const getRelevantDocs = (query) => {
+    const loweredQuery = query.toLowerCase();
+    const matches = documents
+      .filter((doc) =>
+        Object.values(doc).some((value) =>
+          String(value).toLowerCase().includes(loweredQuery)
+        )
+      )
+      .slice(0, 3);
+    return matches;
   };
 
   const handleSendMessage = async (e) => {
@@ -131,61 +127,35 @@ function Chat({ language, onLanguageChange }) {
     setMessages((prev) => [...prev, userMessage]);
     setInputMessage("");
 
+    const relevantDocs = getRelevantDocs(inputMessage);
+    const contextText = relevantDocs
+      .map(
+        (doc, idx) =>
+          `참고자료 ${idx + 1}: ${doc.content || JSON.stringify(doc)}`
+      )
+      .join("\n");
+
+    const promptMessages = [
+      {
+        role: "system",
+        content:
+          "너는 대한민국 독립운동가야. 독립운동가라고 생각하고 옛날 한국인의 말투로 대답해줘. '하오체'로 대답해주면 돼. 아래는 참고할 수 있는 자료요:\n" +
+          contextText,
+      },
+      ...messages.map((m) => ({
+        role: m.isUser ? "user" : "assistant",
+        content: m.text,
+      })),
+      { role: "user", content: inputMessage },
+    ];
+
     try {
       const response = await axios.post(
         `${endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${apiVersion}`,
         {
-          messages: [
-            {
-              role: "system",
-              content:
-                "너는 대한민국 독립운동가야. 독립운동가라고 생각하고 옛날 한국인의 말투로 대답해줘. '하오체'로 대답해주면 돼. 주어진 자료 내에서 최대한 검색해야 해",
-            },
-            ...messages.map((m) => ({
-              role: m.isUser ? "user" : "assistant",
-              content: m.text,
-            })),
-            { role: "user", content: inputMessage },
-          ],
+          messages: promptMessages,
           temperature: 0.7,
-          max_tokens: 5000,
-          top_p: 0.95,
-          frequency_penalty: 0,
-          presence_penalty: 0,
-          stop: null,
-
-          // ✅ AI Search 확장 옵션 추가
-          // azure_extension_options: {
-          //   extensions: [
-          //     {
-          //       type: "AzureCognitiveSearch",
-          //       endpoint: aisearch_endpoint,
-          //       key: aisearch_key,
-          //       indexName: aisearch_indexName,
-          //     },
-          //   ],
-          // },
-          data_sources: [
-            {
-              type: "azure_search",
-              parameters: {
-                endpoint: aisearch_endpoint,
-                index_name: aisearch_indexName,
-                semantic_configuration: aisearch_semantic,
-                query_type: "semantic",
-                fields_mapping: {},
-                in_scope: true,
-                filter: null,
-                strictness: 5,
-                top_n_documents: 5,
-                authentication: {
-                  type: "api_key",
-                  key: aisearch_key,
-                },
-                key: aisearch_key,
-              },
-            },
-          ],
+          max_tokens: 500,
         },
         {
           headers: {
@@ -196,22 +166,13 @@ function Chat({ language, onLanguageChange }) {
       );
 
       const botResponse = response.data.choices[0].message.content;
-
-      // 주석 처리(참고 자료)
-      const citations =
-        response.data.choices[0].message.context?.citations || [];
-
-      const formattedCaptions = citations.map((c, idx) => ({
-        title: `doc${idx + 1}`,
-        content: c.content || "내용 없음",
-      }));
-
-      setCaptions(formattedCaptions);
-
       setMessages((prev) => [...prev, { text: botResponse, isUser: false }]);
 
-      // TTS로 읽어주기
-      //speakTextWithAzureTTS(botResponse);
+      const formattedCaptions = relevantDocs.map((doc, idx) => ({
+        title: `참고 ${idx + 1}`,
+        content: doc.content || JSON.stringify(doc),
+      }));
+      setCaptions(formattedCaptions);
     } catch (error) {
       console.error("OpenAI 오류:", error);
       setMessages((prev) => [
@@ -266,27 +227,7 @@ function Chat({ language, onLanguageChange }) {
       <div className="caption-container">
         {captions.map((caption, index) => (
           <div key={index} className="caption-item">
-            <div className="caption-title">
-              {caption.title || `doc${index + 1}`}
-            </div>
-
-            {caption.url && isImageUrl(caption.url) ? (
-              <img
-                src={caption.url}
-                alt={`doc${index + 1}`}
-                className="caption-image"
-              />
-            ) : caption.url ? (
-              <a
-                href={caption.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="caption-link"
-              >
-                {caption.url}
-              </a>
-            ) : null}
-
+            <div className="caption-title">{caption.title}</div>
             <div className="caption-content">{caption.content}</div>
           </div>
         ))}
