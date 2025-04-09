@@ -20,7 +20,7 @@
 
 .back-button {
   position: absolute;
-  top: .1rem;
+  top: 0.1rem;
   right: 2rem;
   font-family: "PAK YONG JUN", sans-serif;
   font-size: 1.2rem;
@@ -237,6 +237,6 @@
 }
 
 .tts-button.active {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
 }
