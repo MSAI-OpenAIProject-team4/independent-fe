@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Chat.css";
 import axios from "axios";
-import MenuComponent from '../components/MenuComponent';
+import MenuComponent from "../components/MenuComponent";
 
 function Chat({ language, onLanguageChange }) {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ function Chat({ language, onLanguageChange }) {
   const [inputMessage, setInputMessage] = useState("");
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
   const [currentAudio, setCurrentAudio] = useState(null);
-  const [captions] = useState([]);
+  const [captions, setCaptions] = useState([]);
 
   //////////////////////각종 key/////////////////////////
 
@@ -39,6 +39,20 @@ function Chat({ language, onLanguageChange }) {
   // 메시지가 변경될 때마다 스크롤을 최신 메시지로 이동
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // 👇 새 메시지가 추가될 때 마지막 메시지를 읽어주는 useEffect 추가!
+  useEffect(() => {
+    if (messages.length > 0 && !messages[messages.length - 1].isUser) {
+      // 이전 오디오 정지
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        setCurrentAudio(null); // 👈 이거 중요!
+      }
+
+      speakTextWithAzureTTS(messages[messages.length - 1].text);
+    }
   }, [messages]);
 
   // TTS 함수
@@ -85,12 +99,24 @@ function Chat({ language, onLanguageChange }) {
     }
   };
 
+  //음소거 버튼
+
   const handleTTSButtonClick = () => {
-    setIsTTSEnabled(!isTTSEnabled);
-    if (!isTTSEnabled && currentAudio) {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
-    }
+    setIsTTSEnabled((prev) => {
+      const nextState = !prev;
+
+      if (!nextState && currentAudio) {
+        // 음소거 상태로 변경할 때는 일시정지
+        currentAudio.pause();
+      } else if (nextState && currentAudio && currentAudio.paused) {
+        // 다시 소리 켤 때 이전 오디오가 있으면 이어서 재생
+        currentAudio
+          .play()
+          .catch((e) => console.error("오디오 재생 중 오류:", e));
+      }
+
+      return nextState;
+    });
   };
 
   const handleBackClick = () => {
@@ -102,7 +128,7 @@ function Chat({ language, onLanguageChange }) {
     if (inputMessage.trim() === "") return;
 
     const userMessage = { text: inputMessage, isUser: true };
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInputMessage("");
 
     try {
@@ -113,7 +139,7 @@ function Chat({ language, onLanguageChange }) {
             {
               role: "system",
               content:
-                "너는 대한민국 독립운동가야. 독립운동가라고 생각하고 옛날 한국인의 말투로 대답해줘. '하오체'로 대답해주면 돼.",
+                "너는 대한민국 독립운동가야. 독립운동가라고 생각하고 옛날 한국인의 말투로 대답해줘. '하오체'로 대답해주면 돼. 주어진 자료 내에서 최대한 검색해야 해",
             },
             ...messages.map((m) => ({
               role: m.isUser ? "user" : "assistant",
@@ -122,7 +148,7 @@ function Chat({ language, onLanguageChange }) {
             { role: "user", content: inputMessage },
           ],
           temperature: 0.7,
-          max_tokens: 2000,
+          max_tokens: 5000,
           top_p: 0.95,
           frequency_penalty: 0,
           presence_penalty: 0,
@@ -170,11 +196,22 @@ function Chat({ language, onLanguageChange }) {
       );
 
       const botResponse = response.data.choices[0].message.content;
-      setMessages(prev => [...prev, { text: botResponse, isUser: false }]);
-      
+
+      // 주석 처리(참고 자료)
+      const citations =
+        response.data.choices[0].message.context?.citations || [];
+
+      const formattedCaptions = citations.map((c, idx) => ({
+        title: `doc${idx + 1}`,
+        content: c.content || "내용 없음",
+      }));
+
+      setCaptions(formattedCaptions);
+
+      setMessages((prev) => [...prev, { text: botResponse, isUser: false }]);
 
       // TTS로 읽어주기
-      speakTextWithAzureTTS(botResponse);
+      //speakTextWithAzureTTS(botResponse);
     } catch (error) {
       console.error("OpenAI 오류:", error);
       setMessages(prev => [
@@ -183,6 +220,10 @@ function Chat({ language, onLanguageChange }) {
       ]);
     }
   };
+
+  function isImageUrl(url) {
+    return /\.(jpeg|jpg|png|gif|webp)$/i.test(url);
+  }
 
   return (
     <div className="chat">
@@ -215,8 +256,8 @@ function Chat({ language, onLanguageChange }) {
           </button>
         </form>
       </div>
-      <button 
-        className={`tts-button ${isTTSEnabled ? 'active' : ''}`}
+      <button
+        className={`tts-button ${isTTSEnabled ? "active" : ""}`}
         onClick={handleTTSButtonClick}
         title={isTTSEnabled ? "TTS 끄기" : "TTS 켜기"}
       >
@@ -225,7 +266,27 @@ function Chat({ language, onLanguageChange }) {
       <div className="caption-container">
         {captions.map((caption, index) => (
           <div key={index} className="caption-item">
-            <div className="caption-title">{caption.title}</div>
+            <div className="caption-title">
+              {caption.title || `doc${index + 1}`}
+            </div>
+
+            {caption.url && isImageUrl(caption.url) ? (
+              <img
+                src={caption.url}
+                alt={`doc${index + 1}`}
+                className="caption-image"
+              />
+            ) : caption.url ? (
+              <a
+                href={caption.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="caption-link"
+              >
+                {caption.url}
+              </a>
+            ) : null}
+
             <div className="caption-content">{caption.content}</div>
           </div>
         ))}
