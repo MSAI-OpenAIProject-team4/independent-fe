@@ -43,8 +43,14 @@ function Chat({ language, onLanguageChange }) {
 
   // 👇 새 메시지가 추가될 때 마지막 메시지를 읽어주는 useEffect 추가!
   useEffect(() => {
-    // 메시지가 비어있지 않고 마지막 메시지가 봇 메시지일 경우
     if (messages.length > 0 && !messages[messages.length - 1].isUser) {
+      // 이전 오디오 정지
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        setCurrentAudio(null); // 👈 이거 중요!
+      }
+
       speakTextWithAzureTTS(messages[messages.length - 1].text);
     }
   }, [messages]);
@@ -133,7 +139,7 @@ function Chat({ language, onLanguageChange }) {
             {
               role: "system",
               content:
-                "너는 대한민국 독립운동가야. 독립운동가라고 생각하고 옛날 한국인의 말투로 대답해줘. '하오체'로 대답해주면 돼.",
+                "너는 대한민국 독립운동가야. 독립운동가라고 생각하고 옛날 한국인의 말투로 대답해줘. '하오체'로 대답해주면 돼. 주어진 자료 내에서 최대한 검색해야 해",
             },
             ...messages.map((m) => ({
               role: m.isUser ? "user" : "assistant",
@@ -142,7 +148,7 @@ function Chat({ language, onLanguageChange }) {
             { role: "user", content: inputMessage },
           ],
           temperature: 0.7,
-          max_tokens: 2000,
+          max_tokens: 5000,
           top_p: 0.95,
           frequency_penalty: 0,
           presence_penalty: 0,
@@ -215,6 +221,10 @@ function Chat({ language, onLanguageChange }) {
     }
   };
 
+  function isImageUrl(url) {
+    return /\.(jpeg|jpg|png|gif|webp)$/i.test(url);
+  }
+
   return (
     <div className="chat">
       <MenuComponent onLanguageChange={onLanguageChange} />
@@ -256,7 +266,27 @@ function Chat({ language, onLanguageChange }) {
       <div className="caption-container">
         {captions.map((caption, index) => (
           <div key={index} className="caption-item">
-            <div className="caption-title">{caption.title}</div>
+            <div className="caption-title">
+              {caption.title || `doc${index + 1}`}
+            </div>
+
+            {caption.url && isImageUrl(caption.url) ? (
+              <img
+                src={caption.url}
+                alt={`doc${index + 1}`}
+                className="caption-image"
+              />
+            ) : caption.url ? (
+              <a
+                href={caption.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="caption-link"
+              >
+                {caption.url}
+              </a>
+            ) : null}
+
             <div className="caption-content">{caption.content}</div>
           </div>
         ))}
