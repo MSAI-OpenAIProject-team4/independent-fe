@@ -90,17 +90,17 @@ function Chat({ language, onLanguageChange }) {
               .filter((row) => row.id && row.content)
               .map((row) => ({
                 id: row.id,
-                name: row.hangle || "",
-                hanjaName: row.hanja || "",
-                birthplace: row.adress || "",
-                movement: row.type || "",
-                award: row.award || "",
-                summary: row.activity || "",
+                name: row.name || "",
+                hanjaName: row.nameHanja || "",
+                birthplace: row.addressBirth || "",
+                movement: row.movementFamily || "",
+                award: row.orders || "",
+                summary: row.activities || "",
                 content: row.content || "",
-                reference: row.reference || "",
+                reference: row.references || "",
                 imageUrl: row.image_url || "",
                 searchText:
-                  `${row.hangle} ${row.hanja} ${row.type} ${row.adress} ${row.activity} ${row.content}`.toLowerCase(),
+                  `${row.name} ${row.nameHanja} ${row.movementFamily} ${row.addressBirth} ${row.activities} ${row.content}`.toLowerCase(),
               }));
             setKnowledgeBase(knowledge);
           },
