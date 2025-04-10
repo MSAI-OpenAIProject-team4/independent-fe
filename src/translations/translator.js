@@ -1,4 +1,4 @@
-// src/utils/translator.js
+// src/translations/translator.js
 export async function translateText(text, targetLanguage) {
   const endpoint = process.env.REACT_APP_AZURE_OPENAI_ENDPOINT;
   const deployment = process.env.REACT_APP_AZURE_OPENAI_DEPLOYMENT_NAME;
