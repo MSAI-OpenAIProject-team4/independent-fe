@@ -28,3 +28,5 @@ node_modules
 
 
 /server/data/face_database.pkl
+
+/public/data
