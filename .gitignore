@@ -26,8 +26,5 @@ yarn-error.log*
 .vscode/ 
 node_modules
 
-/public/images
-/public/target.jpg
 
 /server/data/face_database.pkl
-
