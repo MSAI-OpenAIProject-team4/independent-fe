@@ -1,9 +1,11 @@
+// src/pages/Chat.js
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Chat.css";
 import axios from "axios";
 import Papa from "papaparse";
 import MenuComponent from "../components/MenuComponent";
+import { translateText } from "../translations/translator"; // 번역 함수 임포트
 
 function Chat({ language, onLanguageChange }) {
   const navigate = useNavigate();
@@ -14,6 +16,8 @@ function Chat({ language, onLanguageChange }) {
       isUser: false,
     },
   ]);
+  // 번역된 메시지를 저장할 상태 (language가 "ko"면 원본 메시지를 그대로 사용)
+  const [translatedMessages, setTranslatedMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
   const [currentAudio, setCurrentAudio] = useState(null);
@@ -28,9 +32,34 @@ function Chat({ language, onLanguageChange }) {
   const speechKey = process.env.REACT_APP_AZURE_SPEECH_KEY;
   const speechRegion = process.env.REACT_APP_AZURE_SPEECH_REGION;
 
+  // 메시지 번역: language가 "ko"가 아니면 번역, 그렇지 않으면 원본 메시지를 그대로 사용
+  useEffect(() => {
+    const translateMessages = async () => {
+      if (language === "ko") {
+        setTranslatedMessages(messages);
+        return;
+      }
+      try {
+        const translated = await Promise.all(
+          messages.map(async (msg) => {
+            // 사용자의 메시지는 번역 없이 그대로 사용
+            if (msg.isUser) return msg;
+            const translatedText = await translateText(msg.text, language);
+            return { ...msg, text: translatedText };
+          })
+        );
+        setTranslatedMessages(translated);
+      } catch (error) {
+        console.error("메시지 번역 실패:", error);
+        setTranslatedMessages(messages);
+      }
+    };
+    translateMessages();
+  }, [messages, language]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [translatedMessages]);
 
   useEffect(() => {
     if (messages.length > 0 && !messages[messages.length - 1].isUser) {
@@ -47,7 +76,7 @@ function Chat({ language, onLanguageChange }) {
     // CSV 파일에서 데이터 로드
     const loadData = async () => {
       try {
-        const response = await fetch("/data/independent.csv");
+        const response = await fetch("/data/doklip.csv");
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -64,17 +93,18 @@ function Chat({ language, onLanguageChange }) {
               .filter((row) => row.id && row.content)
               .map((row) => ({
                 id: row.id,
-                name: row.hangle || "",
-                hanjaName: row.hanja || "",
-                birthplace: row.adress || "",
-                movement: row.type || "",
-                award: row.award || "",
-                summary: row.activity || "",
+                name: row.name || "",
+                hanjaName: row.nameHanja || "",
+                birthplace: row.adressBirth || "",
+                movement: row.movementFamily || "",
+                award: row.orders || "",
+                summary: row.activities || "",
                 content: row.content || "",
-                reference: row.reference || "",
+                reference: row.references || "",
                 imageUrl: row.image_url || "",
+                organization: row.engagedOrganizations || "",
                 searchText:
-                  `${row.hangle} ${row.hanja} ${row.type} ${row.adress} ${row.activity} ${row.content}`.toLowerCase(),
+                  `${row.name} ${row.nameHanja} ${row.movementFamily} ${row.adressBirth} ${row.activities} ${row.content} ${row.engagedOrganizations}`.toLowerCase(),
               }));
 
             console.log("처리된 데이터:", knowledge);
@@ -97,11 +127,8 @@ function Chat({ language, onLanguageChange }) {
 
     const loweredQuery = query.toLowerCase();
 
-    // 관련성 점수 계산 함수 개선
     const calculateRelevance = (item) => {
       let score = 0;
-
-      // 이름 매칭 (가장 높은 우선순위)
       if (item.name && item.name.toLowerCase().includes(loweredQuery)) {
         score += 10;
       }
@@ -111,10 +138,14 @@ function Chat({ language, onLanguageChange }) {
       ) {
         score += 8;
       }
-
-      // 운동 및 장소 매칭
       if (item.movement && item.movement.toLowerCase().includes(loweredQuery)) {
         score += 6;
+      }
+      if (
+        item.organization &&
+        item.organization.toLowerCase().includes(loweredQuery)
+      ) {
+        score += 5;
       }
       if (
         item.birthplace &&
@@ -122,24 +153,18 @@ function Chat({ language, onLanguageChange }) {
       ) {
         score += 4;
       }
-
-      // 내용 매칭
       if (item.summary && item.summary.toLowerCase().includes(loweredQuery)) {
         score += 3;
       }
       if (item.content && item.content.toLowerCase().includes(loweredQuery)) {
         score += 2;
       }
-
-      // 통합 검색 텍스트 매칭
       if (item.searchText.includes(loweredQuery)) {
         score += 1;
       }
-
       return score;
     };
 
-    // 관련성 점수로 정렬하여 상위 3개 반환
     return knowledgeBase
       .map((item) => ({
         ...item,
@@ -157,6 +182,20 @@ function Chat({ language, onLanguageChange }) {
       currentAudio.pause();
       currentAudio.currentTime = 0;
     }
+
+    // 언어별 음성 이름 설정
+    const voiceMap = {
+      ko: "ko-KR-SunHiNeural",
+      en: "en-US-JennyNeural",
+      ja: "ja-JP-NanamiNeural",
+      // zh: "zh-CN-XiaoxiaoNeural",
+      // fr: "fr-FR-DeniseNeural",
+      // de: "de-DE-KatjaNeural",
+      // es: "es-ES-ElviraNeural",
+    };
+
+    const voiceName = voiceMap[language] || "ko-KR-SunHiNeural"; // 기본값은 한국어
+    const langCode = voiceName.split("-").slice(0, 2).join("-");
 
     const url = `https://${speechRegion}.tts.speech.microsoft.com/cognitiveservices/v1`;
     const ssml = `
@@ -280,7 +319,7 @@ function Chat({ language, onLanguageChange }) {
       </button>
       <div className="chat-container">
         <div className="messages">
-          {messages.map((message, index) => (
+          {translatedMessages.map((message, index) => (
             <div
               key={index}
               className={`message ${message.isUser ? "user" : "bot"}`}

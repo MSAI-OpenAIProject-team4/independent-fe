@@ -3,7 +3,8 @@
   min-height: 100vh;
   display: flex;
   position: relative;
-  background: url("../../public/background_chat.png") no-repeat center center fixed;
+  background: url("../../public/background_chat.png") no-repeat center center
+    fixed;
   background-size: cover;
 }
 
@@ -31,6 +32,7 @@
   color: white;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin: 20px;
   z-index: 10;
 }
 
