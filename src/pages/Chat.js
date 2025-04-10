@@ -5,7 +5,7 @@ import "../styles/Chat.css";
 import axios from "axios";
 import Papa from "papaparse";
 import MenuComponent from "../components/MenuComponent";
-import { translateText } from "../translations/translator"; // 번역 함수 임포트
+import { translateText } from "../translations/translator";
 
 function Chat({ language, onLanguageChange }) {
   const navigate = useNavigate();
@@ -16,7 +16,6 @@ function Chat({ language, onLanguageChange }) {
       isUser: false,
     },
   ]);
-  // 번역된 메시지를 저장할 상태 (language가 "ko"면 원본 메시지를 그대로 사용)
   const [translatedMessages, setTranslatedMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
@@ -24,7 +23,6 @@ function Chat({ language, onLanguageChange }) {
   const [captions, setCaptions] = useState([]);
   const [knowledgeBase, setKnowledgeBase] = useState([]);
 
-  // Azure 설정
   const endpoint = process.env.REACT_APP_AZURE_OPENAI_ENDPOINT;
   const apiKey = process.env.REACT_APP_AZURE_OPENAI_API_KEY;
   const apiVersion = process.env.REACT_APP_AZURE_OPENAI_API_VERSION;
@@ -32,7 +30,6 @@ function Chat({ language, onLanguageChange }) {
   const speechKey = process.env.REACT_APP_AZURE_SPEECH_KEY;
   const speechRegion = process.env.REACT_APP_AZURE_SPEECH_REGION;
 
-  // 메시지 번역: language가 "ko"가 아니면 번역, 그렇지 않으면 원본 메시지를 그대로 사용
   useEffect(() => {
     const translateMessages = async () => {
       if (language === "ko") {
@@ -42,7 +39,6 @@ function Chat({ language, onLanguageChange }) {
       try {
         const translated = await Promise.all(
           messages.map(async (msg) => {
-            // 사용자의 메시지는 번역 없이 그대로 사용
             if (msg.isUser) return msg;
             const translatedText = await translateText(msg.text, language);
             return { ...msg, text: translatedText };
@@ -62,24 +58,27 @@ function Chat({ language, onLanguageChange }) {
   }, [translatedMessages]);
 
   useEffect(() => {
-    if (messages.length > 0 && !messages[messages.length - 1].isUser) {
+    if (
+      translatedMessages.length > 0 &&
+      !translatedMessages[translatedMessages.length - 1].isUser
+    ) {
+      const latestTranslated =
+        translatedMessages[translatedMessages.length - 1];
       if (currentAudio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;
         setCurrentAudio(null);
       }
-      speakTextWithAzureTTS(messages[messages.length - 1].text);
+      speakTextWithAzureTTS(latestTranslated.text);
     }
-  }, [messages]);
+  }, [translatedMessages]);
 
   useEffect(() => {
-    // CSV 파일에서 데이터 로드
     const loadData = async () => {
       try {
-        const response = await fetch("/data/doklip.csv");
-        if (!response.ok) {
+        const response = await fetch("/data/independent.csv");
+        if (!response.ok)
           throw new Error(`HTTP error! status: ${response.status}`);
-        }
         const csvText = await response.text();
 
         Papa.parse(csvText, {
@@ -87,27 +86,22 @@ function Chat({ language, onLanguageChange }) {
           skipEmptyLines: true,
           encoding: "UTF-8",
           complete: (results) => {
-            console.log("CSV 파싱 결과:", results);
-
             const knowledge = results.data
               .filter((row) => row.id && row.content)
               .map((row) => ({
                 id: row.id,
-                name: row.name || "",
-                hanjaName: row.nameHanja || "",
-                birthplace: row.adressBirth || "",
-                movement: row.movementFamily || "",
-                award: row.orders || "",
-                summary: row.activities || "",
+                name: row.hangle || "",
+                hanjaName: row.hanja || "",
+                birthplace: row.adress || "",
+                movement: row.type || "",
+                award: row.award || "",
+                summary: row.activity || "",
                 content: row.content || "",
-                reference: row.references || "",
+                reference: row.reference || "",
                 imageUrl: row.image_url || "",
-                organization: row.engagedOrganizations || "",
                 searchText:
-                  `${row.name} ${row.nameHanja} ${row.movementFamily} ${row.adressBirth} ${row.activities} ${row.content} ${row.engagedOrganizations}`.toLowerCase(),
+                  `${row.hangle} ${row.hanja} ${row.type} ${row.adress} ${row.activity} ${row.content}`.toLowerCase(),
               }));
-
-            console.log("처리된 데이터:", knowledge);
             setKnowledgeBase(knowledge);
           },
           error: (error) => {
@@ -118,7 +112,6 @@ function Chat({ language, onLanguageChange }) {
         console.error("CSV 파일 로드 중 오류:", error);
       }
     };
-
     loadData();
   }, []);
 
@@ -129,47 +122,18 @@ function Chat({ language, onLanguageChange }) {
 
     const calculateRelevance = (item) => {
       let score = 0;
-      if (item.name && item.name.toLowerCase().includes(loweredQuery)) {
-        score += 10;
-      }
-      if (
-        item.hanjaName &&
-        item.hanjaName.toLowerCase().includes(loweredQuery)
-      ) {
-        score += 8;
-      }
-      if (item.movement && item.movement.toLowerCase().includes(loweredQuery)) {
-        score += 6;
-      }
-      if (
-        item.organization &&
-        item.organization.toLowerCase().includes(loweredQuery)
-      ) {
-        score += 5;
-      }
-      if (
-        item.birthplace &&
-        item.birthplace.toLowerCase().includes(loweredQuery)
-      ) {
-        score += 4;
-      }
-      if (item.summary && item.summary.toLowerCase().includes(loweredQuery)) {
-        score += 3;
-      }
-      if (item.content && item.content.toLowerCase().includes(loweredQuery)) {
-        score += 2;
-      }
-      if (item.searchText.includes(loweredQuery)) {
-        score += 1;
-      }
+      if (item.name?.toLowerCase().includes(loweredQuery)) score += 10;
+      if (item.hanjaName?.toLowerCase().includes(loweredQuery)) score += 8;
+      if (item.movement?.toLowerCase().includes(loweredQuery)) score += 6;
+      if (item.birthplace?.toLowerCase().includes(loweredQuery)) score += 4;
+      if (item.summary?.toLowerCase().includes(loweredQuery)) score += 3;
+      if (item.content?.toLowerCase().includes(loweredQuery)) score += 2;
+      if (item.searchText.includes(loweredQuery)) score += 1;
       return score;
     };
 
     return knowledgeBase
-      .map((item) => ({
-        ...item,
-        relevance: calculateRelevance(item),
-      }))
+      .map((item) => ({ ...item, relevance: calculateRelevance(item) }))
       .filter((item) => item.relevance > 0)
       .sort((a, b) => b.relevance - a.relevance)
       .slice(0, 3);
@@ -183,24 +147,14 @@ function Chat({ language, onLanguageChange }) {
       currentAudio.currentTime = 0;
     }
 
-    // 언어별 음성 이름 설정
-    const voiceMap = {
-      ko: "ko-KR-SunHiNeural",
-      en: "en-US-JennyNeural",
-      ja: "ja-JP-NanamiNeural",
-      // zh: "zh-CN-XiaoxiaoNeural",
-      // fr: "fr-FR-DeniseNeural",
-      // de: "de-DE-KatjaNeural",
-      // es: "es-ES-ElviraNeural",
-    };
-
-    const voiceName = voiceMap[language] || "ko-KR-SunHiNeural"; // 기본값은 한국어
-    const langCode = voiceName.split("-").slice(0, 2).join("-");
-
     const url = `https://${speechRegion}.tts.speech.microsoft.com/cognitiveservices/v1`;
     const ssml = `
-      <speak version='1.0' xml:lang='ko-KR'>
-        <voice name='ko-KR-SunHiNeural'>${text}</voice>
+      <speak version='1.0' xml:lang='${language === "ko" ? "ko-KR" : "en-US"}'>
+        <voice name='${
+          language === "ko" ? "ko-KR-SunHiNeural" : "en-US-JennyNeural"
+        }'>
+          ${text}
+        </voice>
       </speak>`;
 
     try {
@@ -226,15 +180,13 @@ function Chat({ language, onLanguageChange }) {
 
   const handleTTSButtonClick = () => {
     setIsTTSEnabled((prev) => {
-      const nextState = !prev;
-      if (!nextState && currentAudio) {
+      const next = !prev;
+      if (!next && currentAudio) {
         currentAudio.pause();
-      } else if (nextState && currentAudio?.paused) {
-        currentAudio
-          .play()
-          .catch((e) => console.error("오디오 재생 중 오류:", e));
+      } else if (next && currentAudio?.paused) {
+        currentAudio.play().catch((e) => console.error("오디오 재생 오류:", e));
       }
-      return nextState;
+      return next;
     });
   };
 
@@ -264,7 +216,7 @@ function Chat({ language, onLanguageChange }) {
       {
         role: "system",
         content:
-          "너는 대한민국 독립운동가야. 독립운동가라고 생각하고 옛날 한국인의 말투로 대답해줘. '하오체'로 대답해주면 돼. 주의사항:\n1. 제공된 참고자료의 내용만 사용하여 대답하시오\n2. 참고자료에 없는 내용은 절대 생성하지 마시오\n3. 참고자료에 있는 사실만을 기반으로 대화하시오\n4. 확실하지 않은 내용은 '그 부분에 대해서는 정확히 알지 못하오'라고 대답하시오\n\n아래는 참고할 수 있는 자료요:\n" +
+          "너는 대한민국 독립운동가야. 독립운동가라고 생각하고 옛날 한국인의 말투로 대답해줘. 500자 이내로 요약해서 핵심만 알려줘. '하오체'로 대답해주면 돼. 주의사항:\n1. 제공된 참고자료의 내용만 사용하여 대답하시오\n2. 참고자료에 없는 내용은 절대 생성하지 마시오\n3. 참고자료에 있는 사실만을 기반으로 대화하시오\n4. 확실하지 않은 내용은 '그 부분에 대해서는 정확히 알지 못하오'라고 대답하시오\n\n아래는 참고할 수 있는 자료요:\n" +
           contextText,
       },
       ...messages.map((m) => ({
