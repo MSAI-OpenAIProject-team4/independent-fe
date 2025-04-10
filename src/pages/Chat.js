@@ -254,47 +254,57 @@ function Chat({ language, onLanguageChange }) {
       console.error("OpenAI 오류:", error);
       setMessages((prev) => [
         ...prev,
-        { text: "죄송하오. 답변 중에 오류가 발생했소.", isUser: false },
+        { text: "오류가 발생했소. 다시 시도해보시오.", isUser: false },
       ]);
     }
   };
 
   return (
-    <div className="chat-container">
-      <MenuComponent onBackClick={handleBackClick} onTTSClick={handleTTSButtonClick} isTTSEnabled={isTTSEnabled} />
-      <div className="messages-container">
+    <div className="chat">
+      <MenuComponent onLanguageChange={onLanguageChange} />
+      <button className="back-button" onClick={handleBackClick}>
+        뒤로가기
+      </button>
+      <div className="chat-container">
         <div className="messages">
           {translatedMessages.map((message, index) => (
             <div
               key={index}
               className={`message ${message.isUser ? "user" : "bot"}`}
             >
-              <div className="message-content">{message.text}</div>
+              {message.text}
             </div>
           ))}
           <div ref={messagesEndRef} />
         </div>
-        <div className="captions">
-          {captions.map((caption, index) => (
-            <div key={index} className="caption">
-              <h3>{caption.title}</h3>
-              <p>{caption.content}</p>
-            </div>
-          ))}
-        </div>
+        <form className="input-form" onSubmit={handleSendMessage}>
+          <input
+            type="text"
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            placeholder="메시지를 입력하세요..."
+            className="message-input"
+          />
+          <button type="submit" className="send-button">
+            전송
+          </button>
+        </form>
       </div>
-      <form onSubmit={handleSendMessage} className="input-form">
-        <input
-          type="text"
-          value={inputMessage}
-          onChange={(e) => setInputMessage(e.target.value)}
-          placeholder="메시지를 입력하세요..."
-          className="message-input"
-        />
-        <button type="submit" className="send-button">
-          전송
-        </button>
-      </form>
+      <button
+        className={`tts-button ${isTTSEnabled ? "active" : ""}`}
+        onClick={handleTTSButtonClick}
+        title={isTTSEnabled ? "TTS 끄기" : "TTS 켜기"}
+      >
+        {isTTSEnabled ? "🔊" : "🔇"}
+      </button>
+      <div className="caption-container">
+        {captions.map((caption, index) => (
+          <div key={index} className="caption-item">
+            <div className="caption-title">{caption.title}</div>
+            <div className="caption-content">{caption.content}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
