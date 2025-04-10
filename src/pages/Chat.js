@@ -149,6 +149,7 @@ function Chat({ language, onLanguageChange }) {
 
     const url = `https://${speechRegion}.tts.speech.microsoft.com/cognitiveservices/v1`;
     // SSML 내부에 불필요한 줄바꿈과 들여쓰기를 제거
+    // 번역 언어 설정
     const ssml = `<speak version="1.0" xml:lang="${
       language === "ko" ? "ko-KR" : language === "ja" ? "ja-JP" : "en-US"
     }"><voice name="${
