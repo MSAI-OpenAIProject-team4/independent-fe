@@ -4,6 +4,12 @@ import base64
 from azure.storage.blob import BlobServiceClient
 import pandas as pd
 import os
+import io
+from PIL import Image
+from dotenv import load_dotenv
+
+# .env 파일 로드
+load_dotenv()
 
 class FaceComparer:
     def __init__(self):
@@ -13,7 +19,7 @@ class FaceComparer:
         self.container_client = self.blob_service_client.get_container_client("image")
         
         # CSV 데이터 로드 - 파일명과 경로 수정
-        self.fighter_data = pd.read_csv("../public/data/IndependentData.csv")
+        self.fighter_data = pd.read_csv("../public/data/doklip.csv")
         
         # OpenCV 설정
         self.face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
@@ -136,3 +142,75 @@ class FaceComparer:
         except Exception as e:
             print(f"Error in find_match: {e}")
             return {"error": "이미지 비교 중 오류가 발생했습니다."}
+
+def compare_faces(user_image_base64):
+    try:
+        # Azure Storage 연결
+        connect_str = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
+        blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+        container_name = "image"
+        
+        # base64 이미지를 numpy 배열로 변환
+        img_data = base64.b64decode(user_image_base64)
+        img = Image.open(io.BytesIO(img_data))
+        user_img_cv = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+        
+        # CSV 파일에서 독립운동가 정보 로드
+        df = pd.read_csv('../public/data/IndependentData.csv')
+        
+        best_match = None
+        highest_similarity = 0
+        
+        # 각 독립운동가 이미지와 비교
+        for _, row in df.iterrows():
+            try:
+                # Blob에서 이미지 다운로드
+                blob_client = blob_service_client.get_blob_client(
+                    container=container_name,
+                    blob=row['image_url'].split('/')[-1]
+                )
+                independence_img_data = blob_client.download_blob().readall()
+                
+                # 이미지를 numpy 배열로 변환
+                independence_img = Image.open(io.BytesIO(independence_img_data))
+                independence_img_cv = cv2.cvtColor(np.array(independence_img), cv2.COLOR_RGB2BGR)
+                
+                # 이미지 크기 조정
+                user_img_resized = cv2.resize(user_img_cv, (300, 300))
+                independence_img_resized = cv2.resize(independence_img_cv, (300, 300))
+                
+                # 히스토그램 비교
+                hist_user = cv2.calcHist([user_img_resized], [0], None, [256], [0, 256])
+                hist_independence = cv2.calcHist([independence_img_resized], [0], None, [256], [0, 256])
+                
+                similarity = cv2.compareHist(hist_user, hist_independence, cv2.HISTCMP_CORREL)
+                
+                if similarity > highest_similarity:
+                    highest_similarity = similarity
+                    best_match = {
+                        'name': row['name'],
+                        'nameHanja': row['nameHanja'],
+                        'movementFamily': row['movementFamily'],
+                        'orders': row['orders'],
+                        'addressBirth': row['addressBirth'],
+                        'activities': row['activities'],
+                        'content': row['content'],
+                        'references': row['references'],
+                        'image_url': row['image_url']
+                    }
+                    
+            except Exception as e:
+                print(f"Error processing image for {row['name']}: {str(e)}")
+                continue
+        
+        if best_match:
+            return {
+                'matchedFighter': best_match,
+                'similarity': highest_similarity
+            }
+        else:
+            return {'error': '매칭된 결과가 없습니다.'}
+            
+    except Exception as e:
+        print(f"Error in compare_faces: {str(e)}")
+        return {'error': str(e)}

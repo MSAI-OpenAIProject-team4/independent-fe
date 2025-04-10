@@ -1,185 +1,151 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import '../styles/MatchResult.css';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import '../styles/MatchResult.css';
 
-function MatchResult() {
+const MatchResult = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { capturedImage } = location.state || {};
+  const capturedImage = location.state?.capturedImage;
   const [matchResult, setMatchResult] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const compareImages = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        // VM 엔드포인트 확인
-        const vmEndpoint = process.env.REACT_APP_VM_ENDPOINT;
-        if (!vmEndpoint) {
-          throw new Error('VM 엔드포인트가 설정되지 않았습니다. .env 파일을 확인해주세요.');
-        }
-
-        // axios 설정
-        const axiosConfig = {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          timeout: 30000, // 30초 타임아웃
-        };
-
-        const response = await axios.post(
-          `${vmEndpoint}/compare`,
-          {
-            userImage: capturedImage,
-          },
-          axiosConfig
-        );
-
-        if (response.data) {
-          setMatchResult(response.data);
-        } else {
-          throw new Error('서버로부터 응답을 받지 못했습니다.');
-        }
-      } catch (error) {
-        console.error('이미지 비교 중 오류 발생:', error);
-        
-        let errorMessage = '이미지 비교 중 오류가 발생했습니다.';
-        if (error.code === 'ECONNABORTED') {
-          errorMessage = '서버 연결 시간이 초과되었습니다. 다시 시도해주세요.';
-        } else if (error.code === 'ERR_NETWORK') {
-          errorMessage = '서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.';
-        } else if (error.message.includes('VM 엔드포인트')) {
-          errorMessage = error.message;
-        } else if (error.response) {
-          errorMessage = `서버 오류: ${error.response.data.message || '알 수 없는 오류가 발생했습니다.'}`;
-        }
-        
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     if (capturedImage) {
       compareImages();
-    } else {
-      setError('이미지가 없습니다.');
-      setIsLoading(false);
     }
   }, [capturedImage]);
 
-  const handleRetry = () => {
-    if (capturedImage) {
-      setIsLoading(true);
+  const compareImages = async () => {
+    try {
+      setLoading(true);
       setError(null);
-      const compareImages = async () => {
-        try {
-          const vmEndpoint = process.env.REACT_APP_VM_ENDPOINT;
-          if (!vmEndpoint) {
-            throw new Error('VM 엔드포인트가 설정되지 않았습니다. .env 파일을 확인해주세요.');
-          }
 
-          const response = await axios.post(
-            `${vmEndpoint}/compare`,
-            {
-              userImage: capturedImage,
-            },
-            {
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              timeout: 30000,
-            }
-          );
-          setMatchResult(response.data);
-        } catch (error) {
-          console.error('재시도 중 오류 발생:', error);
-          setError('재시도 중 오류가 발생했습니다. 다시 시도해주세요.');
-        } finally {
-          setIsLoading(false);
+      // FormData 생성
+      const formData = new FormData();
+      formData.append('image', capturedImage);
+
+      // 서버에 이미지 전송
+      const response = await axios.post(
+        `${process.env.REACT_APP_VM_ENDPOINT}/compare`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Access-Control-Allow-Origin': '*'
+          },
+          timeout: 30000, // 30초 타임아웃
+          withCredentials: true
         }
-      };
-      compareImages();
+      );
+
+      if (response.data && response.data.match) {
+        setMatchResult(response.data);
+      } else {
+        setError('일치하는 얼굴을 찾을 수 없습니다.');
+      }
+    } catch (err) {
+      console.error('이미지 비교 중 오류:', err);
+      if (err.code === 'ECONNABORTED') {
+        setError('서버 연결 시간이 초과되었습니다. 다시 시도해주세요.');
+      } else if (err.response) {
+        setError(`서버 오류: ${err.response.data.error || '알 수 없는 오류'}`);
+      } else if (err.request) {
+        setError('서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.');
+      } else {
+        setError(`오류 발생: ${err.message}`);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleBackToCapture = () => {
-    navigate('/photo-capture');
+  const handleRetry = () => {
+    setLoading(true);
+    setError(null);
+    compareImages();
   };
 
   const handleNextClick = () => {
-    navigate('/chat', { 
-      state: { 
-        matchedFighter: {
-          name: matchResult?.matchedFighter?.name,
-          nameHanja: matchResult?.matchedFighter?.nameHanja,
-          movementFamily: matchResult?.matchedFighter?.movementFamily,
-          orders: matchResult?.matchedFighter?.orders,
-          addressBirth: matchResult?.matchedFighter?.addressBirth,
-          activities: matchResult?.matchedFighter?.activities,
-          content: matchResult?.matchedFighter?.content,
-          references: matchResult?.matchedFighter?.references,
-          image_url: matchResult?.matchedFighter?.image_url
-        }
-      } 
-    });
+    if (matchResult) {
+      const matchedFighter = {
+        name: matchResult.name,
+        nameHanja: matchResult.nameHanja,
+        movementFamily: matchResult.movementFamily,
+        orders: matchResult.orders,
+        addressBirth: matchResult.addressBirth,
+        activities: matchResult.activities,
+        references: matchResult.references,
+        similarity: matchResult.similarity
+      };
+      navigate('/chat', { state: { matchedFighter } });
+    }
   };
 
-  if (isLoading) {
+  if (!capturedImage) {
     return (
-      <div className="match-result">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>이미지를 분석 중입니다...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="match-result">
-        <div className="error-container">
-          <p className="error-message">{error}</p>
-          <div className="error-buttons">
-            <button onClick={handleRetry} className="retry-button">
-              다시 시도
-            </button>
-            <button onClick={handleBackToCapture} className="back-button">
-              사진 다시 찍기
-            </button>
-          </div>
+      <div className="match-result-container">
+        <div className="error-message">
+          <p>캡처된 이미지가 없습니다.</p>
+          <button onClick={() => navigate('/photo-capture')}>돌아가기</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="match-result">
-      <div className="result-container">
-        <h1 className="match-title">{matchResult?.name || '000'}님과 연결되었습니다.</h1>
-        <p className="match-percentage">유사도 : {(matchResult?.similarity * 100).toFixed(2)}%</p>
-        <div className="image-comparison">
-          <div className="historical-image">
-            <img src={matchResult?.fighterImage || "/independence-fighter.png"} alt="독립운동가" />
+    <div className="match-result-container">
+      <h2>얼굴 매칭 결과</h2>
+      
+      {loading && (
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>얼굴을 분석 중입니다...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="error-message">
+          <p>{error}</p>
+          <button onClick={handleRetry}>다시 시도</button>
+          <button onClick={() => navigate('/photo-capture')}>돌아가기</button>
+        </div>
+      )}
+
+      {matchResult && !loading && !error && (
+        <div className="match-result-content">
+          <div className="image-comparison">
+            <div className="image-container">
+              <h3>촬영한 사진</h3>
+              <img src={URL.createObjectURL(capturedImage)} alt="촬영한 사진" />
+            </div>
+            <div className="image-container">
+              <h3>매칭된 독립운동가</h3>
+              <img src={matchResult.matchedImage} alt="매칭된 독립운동가" />
+            </div>
           </div>
-          <div className="user-image">
-            <img src={capturedImage || "/user-avatar.png"} alt="사용자" />
+
+          <div className="match-details">
+            <h3>매칭 정보</h3>
+            <p><strong>이름:</strong> {matchResult.name}</p>
+            <p><strong>한자:</strong> {matchResult.nameHanja}</p>
+            <p><strong>운동/가족:</strong> {matchResult.movementFamily}</p>
+            <p><strong>서훈:</strong> {matchResult.orders}</p>
+            <p><strong>출생지:</strong> {matchResult.addressBirth}</p>
+            <p><strong>활동:</strong> {matchResult.activities}</p>
+            <p><strong>참고문헌:</strong> {matchResult.references}</p>
+            <p><strong>유사도:</strong> {matchResult.similarity}%</p>
+          </div>
+
+          <div className="button-container">
+            <button onClick={() => navigate('/photo-capture')}>다시 촬영</button>
+            <button onClick={handleNextClick}>채팅 시작</button>
           </div>
         </div>
-        <button className="next-button" onClick={handleNextClick}>
-          <span>다음</span>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-      </div>
+      )}
     </div>
   );
-}
+};
 
 export default MatchResult; 
