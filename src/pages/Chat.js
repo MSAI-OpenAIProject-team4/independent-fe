@@ -76,7 +76,7 @@ function Chat({ language, onLanguageChange }) {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const response = await fetch("/data/independent.csv");
+        const response = await fetch("/data/doklip.csv");
         if (!response.ok)
           throw new Error(`HTTP error! status: ${response.status}`);
         const csvText = await response.text();
@@ -90,17 +90,17 @@ function Chat({ language, onLanguageChange }) {
               .filter((row) => row.id && row.content)
               .map((row) => ({
                 id: row.id,
-                name: row.hangle || "",
-                hanjaName: row.hanja || "",
-                birthplace: row.adress || "",
-                movement: row.type || "",
-                award: row.award || "",
-                summary: row.activity || "",
+                name: row.name || "",
+                hanjaName: row.nameHanja || "",
+                birthplace: row.addressBirth || "",
+                movement: row.movementFamily || "",
+                award: row.orders || "",
+                summary: row.activities || "",
                 content: row.content || "",
-                reference: row.reference || "",
+                reference: row.references || "",
                 imageUrl: row.image_url || "",
                 searchText:
-                  `${row.hangle} ${row.hanja} ${row.type} ${row.adress} ${row.activity} ${row.content}`.toLowerCase(),
+                  `${row.name} ${row.nameHanja} ${row.movementFamily} ${row.addressBirth} ${row.activities} ${row.content}`.toLowerCase(),
               }));
             setKnowledgeBase(knowledge);
           },
@@ -148,14 +148,17 @@ function Chat({ language, onLanguageChange }) {
     }
 
     const url = `https://${speechRegion}.tts.speech.microsoft.com/cognitiveservices/v1`;
-    const ssml = `
-      <speak version='1.0' xml:lang='${language === "ko" ? "ko-KR" : "en-US"}'>
-        <voice name='${
-          language === "ko" ? "ko-KR-SunHiNeural" : "en-US-JennyNeural"
-        }'>
-          ${text}
-        </voice>
-      </speak>`;
+    // SSML 내부에 불필요한 줄바꿈과 들여쓰기를 제거
+    // 번역 언어 설정
+    const ssml = `<speak version="1.0" xml:lang="${
+      language === "ko" ? "ko-KR" : language === "ja" ? "ja-JP" : "en-US"
+    }"><voice name="${
+      language === "ko"
+        ? "ko-KR-SunHiNeural"
+        : language === "ja"
+        ? "ja-JP-NanamiNeural"
+        : "en-US-JennyNeural"
+    }">${text.trim()}</voice></speak>`;
 
     try {
       const response = await fetch(url, {
