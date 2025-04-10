@@ -148,14 +148,16 @@ function Chat({ language, onLanguageChange }) {
     }
 
     const url = `https://${speechRegion}.tts.speech.microsoft.com/cognitiveservices/v1`;
-    const ssml = `
-      <speak version='1.0' xml:lang='${language === "ko" ? "ko-KR" : "en-US"}'>
-        <voice name='${
-          language === "ko" ? "ko-KR-SunHiNeural" : "en-US-JennyNeural"
-        }'>
-          ${text}
-        </voice>
-      </speak>`;
+    // SSML 내부에 불필요한 줄바꿈과 들여쓰기를 제거
+    const ssml = `<speak version="1.0" xml:lang="${
+      language === "ko" ? "ko-KR" : language === "ja" ? "ja-JP" : "en-US"
+    }"><voice name="${
+      language === "ko"
+        ? "ko-KR-SunHiNeural"
+        : language === "ja"
+        ? "ja-JP-NanamiNeural"
+        : "en-US-JennyNeural"
+    }">${text.trim()}</voice></speak>`;
 
     try {
       const response = await fetch(url, {
