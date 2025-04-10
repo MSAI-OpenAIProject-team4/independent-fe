@@ -76,7 +76,7 @@ function Chat({ language, onLanguageChange }) {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const response = await fetch("/data/independent.csv");
+        const response = await fetch("/data/doklip.csv");
         if (!response.ok)
           throw new Error(`HTTP error! status: ${response.status}`);
         const csvText = await response.text();
