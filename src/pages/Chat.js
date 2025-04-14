@@ -30,6 +30,17 @@ function Chat({ language, onLanguageChange }) {
   const speechKey = process.env.REACT_APP_AZURE_SPEECH_KEY;
   const speechRegion = process.env.REACT_APP_AZURE_SPEECH_REGION;
 
+  // 일본어 텍스트에 포함된 숫자를 SSML <say-as> 태그로 감싸주는 헬퍼 함수
+  const processTextForTTS = (text, language) => {
+    if (language === "ja") {
+      // 단어 경계 내 숫자를 찾아서 say-as 태그로 감쌈 (cardinal)
+      return text.replace(/\b\d+\b/g, (match) => {
+        return `<say-as interpret-as="cardinal" language="ja-JP">${match}</say-as>`;
+      });
+    }
+    return text;
+  };
+
   useEffect(() => {
     const translateMessages = async () => {
       if (language === "ko") {
@@ -147,18 +158,21 @@ function Chat({ language, onLanguageChange }) {
       currentAudio.currentTime = 0;
     }
 
+    // 언어 설정에 따라 일본어인 경우 숫자를 전처리합니다.
+    const processedText = processTextForTTS(text.trim(), language);
+
     const url = `https://${speechRegion}.tts.speech.microsoft.com/cognitiveservices/v1`;
-    // SSML 내부에 불필요한 줄바꿈과 들여쓰기를 제거
-    // 번역 언어 설정
     const ssml = `<speak version="1.0" xml:lang="${
-      language === "ko" ? "ko-KR" : language === "ja" ? "ja-JP" : "en-US"
-    }"><voice name="${
-      language === "ko"
-        ? "ko-KR-SunHiNeural"
-        : language === "ja"
-        ? "ja-JP-NanamiNeural"
-        : "en-US-JennyNeural"
-    }">${text.trim()}</voice></speak>`;
+      language === "ko" ? "ko-KR" : language === "jp" ? "ja-JP" : "en-US"
+    }">
+      <voice name="${
+        language === "ko"
+          ? "ko-KR-SunHiNeural"
+          : language === "jp"
+          ? "ja-JP-NanamiNeural"
+          : "en-US-JennyNeural"
+      }">${processedText}</voice>
+    </speak>`;
 
     try {
       const response = await fetch(url, {
@@ -219,7 +233,7 @@ function Chat({ language, onLanguageChange }) {
       {
         role: "system",
         content:
-          "너는 대한민국 독립운동가야. 독립운동가라고 생각하고 옛날 한국인의 말투로 대답해줘. 500자 이내로 요약해서 핵심만 알려줘. '하오체'로 대답해주면 돼. 주의사항:\n1. 제공된 참고자료의 내용만 사용하여 대답하시오\n2. 참고자료에 없는 내용은 절대 생성하지 마시오\n3. 참고자료에 있는 사실만을 기반으로 대화하시오\n4. 확실하지 않은 내용은 '그 부분에 대해서는 정확히 알지 못하오'라고 대답하시오\n\n아래는 참고할 수 있는 자료요:\n" +
+          "너는 대한민국 독립운동가야. 독립운동가라고 생각하고 옛날 한국인의 말투로 대답해줘. 1000자 이내로 요약해서 핵심만 알려줘. '하오체'로 대답해주면 돼. 주의사항:\n1. 제공된 참고자료의 내용만 사용하여 대답하시오\n2. 참고자료에 없는 내용은 절대 생성하지 마시오\n3. 참고자료에 있는 사실만을 기반으로 대화하시오\n4. 확실하지 않은 내용은 '그 부분에 대해서는 정확히 알지 못하오'라고 대답하시오\n\n아래는 참고할 수 있는 자료요:\n" +
           contextText,
       },
       ...messages.map((m) => ({
