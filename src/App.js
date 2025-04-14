@@ -9,6 +9,7 @@ import MatchResult from "./pages/MatchResult";
 import IndependentGame from "./pages/IndependentGame";
 import MenuComponent from "./components/MenuComponent";
 import HistoryMoment from "./pages/HistoryMoment";
+import Campaign from "./pages/Campaign";
 
 function App() {
   const [language, setLanguage] = useState("ko");
@@ -67,6 +68,14 @@ function App() {
               <HistoryMoment 
               language={language} 
               onLanguageChange={setLanguage} />
+            }
+          />
+          <Route
+            path="/campaign"
+            element={
+              <Campaign 
+                language={language} 
+                onLanguageChange={setLanguage} />
             }
           />
         </Routes>

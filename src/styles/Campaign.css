@@ -1,0 +1,156 @@
+.campaign-container {
+    min-height: 100vh;
+    padding: 3rem 2rem;
+    background: url("../../public/background_campaign.png") no-repeat center center
+    fixed;
+  background-size: cover;
+}
+
+.campaign-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.campaign-header h1 {
+    font-family: 'PAK YONG JUN', sans-serif;
+    font-size: 3rem;
+    color: #343a40;
+    margin-bottom: 1.8rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.campaign-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 3px;
+    background: linear-gradient(90deg, #ffd700, transparent);
+}
+
+.campaign-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.campaign-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s ease;
+    position: relative;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.campaign-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+.campaign-image {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.campaign-card:hover .campaign-image {
+    transform: scale(1.05);
+}
+
+.campaign-content {
+    padding: 1.5rem;
+    position: relative;
+    height: calc(100% - 250px);
+    display: flex;
+    flex-direction: column;
+}
+
+.campaign-company {
+    position: absolute;
+    top: -1.5rem;
+    left: 2rem;
+    background: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.company-name {
+    font-size: 1rem;
+    color: #495057;
+    font-weight: 600;
+}
+
+.campaign-content h2 {
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+}
+
+.campaign-content p {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    flex-grow: 1;
+}
+
+.campaign-link {
+    margin-left: 33%;
+    width: 150px;
+    display: inline-block;
+    padding: 1rem 2rem;
+    color: #000;
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-align: center;
+    background: url("../../public/campaign_button.png") no-repeat center center;
+    background-size: cover;
+    border: none;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.campaign-link:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+@media (max-width: 1200px) {
+    .campaign-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 900px;
+    }
+}
+
+@media (max-width: 768px) {
+    .campaign-container {
+        padding: 3rem 1.5rem;
+    }
+    
+    .campaign-header {
+        margin-bottom: 3rem;
+    }
+    
+    .campaign-header h1 {
+        font-size: 2.2rem;
+    }
+    
+    .campaign-content h2 {
+        font-size: 1.8rem;
+    }
+    
+    .campaign-grid {
+        grid-template-columns: 1fr;
+        max-width: 500px;
+    }
+}
