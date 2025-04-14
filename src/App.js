@@ -8,6 +8,7 @@ import Chat from "./pages/Chat";
 import MatchResult from "./pages/MatchResult";
 import IndependentGame from "./pages/IndependentGame";
 import MenuComponent from "./components/MenuComponent";
+import HistoryMoment from "./pages/HistoryMoment";
 
 function App() {
   const [language, setLanguage] = useState("ko");
@@ -38,13 +39,17 @@ function App() {
           <Route
             path="/chat"
             element={
-              <Chat language={language} onLanguageChange={setLanguage} />
+              <Chat 
+              language={language} 
+              onLanguageChange={setLanguage} />
             }
           />
           <Route
             path="/result"
             element={
-              <MatchResult language={language} onLanguageChange={setLanguage} />
+              <MatchResult 
+              language={language} 
+              onLanguageChange={setLanguage} />
             }
           />
           <Route
@@ -54,6 +59,14 @@ function App() {
                 language={language}
                 onLanguageChange={setLanguage}
               />
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <HistoryMoment 
+              language={language} 
+              onLanguageChange={setLanguage} />
             }
           />
         </Routes>
