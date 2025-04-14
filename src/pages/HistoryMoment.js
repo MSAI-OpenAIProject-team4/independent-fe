@@ -80,18 +80,18 @@ function HistoryMoment() {
                         <p>{selectedMoment.description}</p>
                     </div>
                     <div className="trial-content">
-                        <div className="chat-container">
-                            <div className="chat-messages">
+                        <div className="history_chat-container">
+                            <div className="history_chat-messages">
                                 {selectedMoment.chatHistory.map((message, index) => (
-                                    <div key={index} className={`message ${message.isUser ? 'user' : 'bot'}`}>
+                                    <div key={index} className={`history_message ${message.isUser ? 'user' : 'bot'}`}>
                                         {message.text}
                                     </div>
                                 ))}
                                 {selectedMoment.isTyping && (
-                                    <div className="typing-indicator">...</div>
+                                    <div className="history_typing-indicator">...</div>
                                 )}
                             </div>
-                            <form onSubmit={handleSendMessage} className="chat-input">
+                            <form onSubmit={handleSendMessage} className="history_chat-input">
                                 <input
                                     type="text"
                                     value={selectedMoment.currentMessage}
