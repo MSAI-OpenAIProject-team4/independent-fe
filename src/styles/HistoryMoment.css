@@ -1,230 +1,268 @@
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slowFadeIn {
-    0% {
-        opacity: 0;
-    }
-    50% {
-        opacity: 0;
-    }
-    100% {
-        opacity: 1;
-    }
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* 폰트 설정 */
+@font-face {
+  font-family: "PAK YONG JUN";
+  src: url("../fonts/Pak_Yong_jun.ttf") format("truetype");
+  /* src: url("../fonts/ChosunCentennial.ttf") format("truetype"); */
+}
+
+.history-moment-container,
+.trial-container,
+.moment-card,
+.history_chat-container,
+.historical-context {
+  font-family: "PAK YONG JUN", sans-serif;
 }
 
 .history-moment-container {
-    min-height: 100vh;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    padding: 2rem;
-    color: white;
-    position: relative;
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 2rem;
+  color: white;
+  position: relative;
 }
 
 .history-moment-container.selection-page {
-    background-image: url('../../public/background_history.png');
+  background-image: url("../../public/background_history.png");
 }
 
 .history-moment-container.trial-page {
-    background-image: url('../../public/judgement.png');
+  background-image: url("../../public/judgement.png");
+  filter: brightness(1.3); /* 1보다 크면 밝아짐 */
 }
 
 .history-moment-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.15);
-    z-index: 1;
-    animation: slowFadeIn 2s ease-in-out;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  animation: slowFadeIn 2s ease-in-out;
 }
 
 .moments-selection {
-    position: relative;
-    z-index: 2;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
 }
 
 .moments-selection h1 {
-    font-size: 3rem;
-    text-align: center;
-    margin-bottom: 3rem;
-    color: #ffd700;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
-    animation: fadeIn 1.5s ease-in-out;
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 3rem;
+  color: #6d3703;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 1.5s ease-in-out;
 }
 
 .moments-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    opacity: 0;
-    animation: fadeIn 1.5s ease-in-out 1s forwards;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  opacity: 0;
+  animation: fadeIn 1.5s ease-in-out 1s forwards;
 }
 
 .moment-card {
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    padding: 2rem;
-    cursor: pointer;
-    transition: transform 0.3s ease;
+  background: rgba(85, 33, 33, 0.5);
+  border-radius: 10px;
+  padding: 2rem;
+  cursor: pointer;
+  transition: transform 0.3s ease;
 }
 
 .moment-card:hover {
-    transform: translateY(-5px);
+  transform: translateY(-5px);
+  background: rgba(85, 33, 33, 0.8);
 }
 
 .moment-card h2 {
-    font-size: 1.8rem;
-    margin-bottom: 1rem;
-    color: #ffd700;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #ffd700;
 }
 
 .moment-card p {
-    font-size: 1.15rem;
-    line-height: 1.6;
-    white-space: pre-line;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  white-space: pre-line;
 }
 
 .trial-container {
-    position: relative;
-    z-index: 2;
-    max-width: 1300px;
-    height: 85vh;
-    margin: 0 auto;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    padding: 1.5rem;
-    animation: slowFadeIn 3s ease-in-out;
-    display: flex;
-    flex-direction: column;
+  position: relative;
+  z-index: 2;
+  max-width: 1300px;
+  height: 85vh;
+  margin: 0 auto;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  padding: 1.5rem;
+  animation: slowFadeIn 3s ease-in-out;
+  display: flex;
+  flex-direction: column;
 }
 
 .trial-header {
-    text-align: center;
-    margin-bottom: 2rem;
-    animation: fadeIn 1s ease-in-out 2s forwards;
-    opacity: 0;
+  text-align: center;
+  margin-bottom: 2rem;
+  animation: fadeIn 1s ease-in-out 2s forwards;
+  opacity: 0;
 }
 
 .trial-header h1 {
-    font-size: 2.5rem;
-    color: #ffd700;
-    margin-bottom: 1rem;
+  font-size: 2.5rem;
+  color: #ffd700;
+  margin-bottom: 1rem;
+  font-family: ChosunCentennial;
 }
 
 .trial-content {
-    display: grid;
-    grid-template-columns: 4fr 1fr;
-    gap: 1.5rem;
-    animation: fadeIn 1s ease-in-out 2.5s forwards;
-    opacity: 0;
-    flex: 1;
-    min-height: 0;
+  display: grid;
+  grid-template-columns: 4fr 1fr;
+  gap: 1.5rem;
+  animation: fadeIn 1s ease-in-out 2.5s forwards;
+  opacity: 0;
+  flex: 1;
+  min-height: 0;
 }
 
 .history_chat-container {
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .history_chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    margin-bottom: 1rem;
-    padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  padding: 1rem;
 }
 
 .history_message {
-    margin-bottom: 1rem;
-    padding: 1rem;
-    border-radius: 10px;
-    max-width: 80%;
+  display: inline-block; /* 콘텐츠에 맞게 늘어남 */
+  max-width: 70%; /* 너비 제한: 필요에 따라 조정 */
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 10px;
+  word-break: break-word; /* 단어 길이에 따른 줄바꿈 */
+  overflow-wrap: break-word;
+  max-width: 80%;
 }
 
 .history_message.user {
-    background: rgba(0, 123, 255, 0.2);
-    margin-left: auto;
+  align-self: flex-end;
+  background: rgb(3, 34, 66);
+  margin-left: auto;
 }
 
 .history_message.bot {
-    background: rgba(255, 255, 255, 0.1);
-    margin-right: auto;
+  background: rgb(14, 0, 24);
+  margin-right: auto;
+  align-self: flex-start;
 }
 
 .history_typing-indicator {
-    color: #ffd700;
-    text-align: center;
-    margin: 1rem 0;
+  color: #ffd700;
+  text-align: center;
+  margin: 1rem 0;
 }
 
 .history_chat-input {
-    display: flex;
-    gap: 1rem;
+  display: flex;
+  gap: 1rem;
 }
 
 .history_chat-input input {
-    flex: 1;
-    padding: 1rem;
-    border: none;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+  flex: 1;
+  padding: 1rem;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
 .history_chat-input button {
-    padding: 1rem 2rem;
-    border: none;
-    border-radius: 10px;
-    background: #ffd700;
-    color: #000;
-    font-weight: bold;
-    cursor: pointer;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 10px;
+  background: #ffd700;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.history_chat-input button:hover {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 10px;
+  background: #ffa600;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
 }
 
 .historical-context {
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    padding: 1.5rem;
-    height: 100%;
-    overflow-y: auto;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  padding: 1.5rem;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .historical-context h2 {
-    font-size: 1.8rem;
-    color: #ffd700;
-    margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  color: #d27000;
+  margin-bottom: 1.5rem;
+  font-family: ChosunCentennial;
 }
 
 .context-item {
-    margin-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .context-item h3 {
-    font-size: 1.3rem;
-    color: #ffd700;
-    margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+  color: #ffd700;
+  margin-bottom: 0.5rem;
 }
 
 .context-item p {
-    font-size: 1rem;
-    line-height: 1.6;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgb(177, 171, 163);
 }
