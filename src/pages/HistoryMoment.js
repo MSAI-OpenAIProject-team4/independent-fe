@@ -7,6 +7,7 @@ import { translateText } from "../translations/translator";
 function HistoryMoment({ language = "ko", onLanguageChange }) {
   const navigate = useNavigate();
   const [selectedMoment, setSelectedMoment] = useState(null);
+  // 번역된 moment를 별도로 관리 (title, description, historicalContext)
   const [translatedMoment, setTranslatedMoment] = useState(null);
 
   const [moments, setMoments] = useState([
@@ -14,7 +15,7 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
       id: 1,
       title: "안중근 의사의 재판",
       description:
-        "1909년 10월 26일, 안중근 의사는 하얼빈 역에서 이토 히로부미를 처단한 후 체포되어 재판을 받게 됩니다. \n 당신은 안중근 의사가 되어 스스로를 변호해야 합니다.",
+        "1909년 10월 26일, 안중근 의사는 하얼빈 역에서 이토 히로부미를 처단한 후 체포되어 재판을 받게 됩니다. \n당신은 안중근 의사가 되어 스스로를 변호해야 합니다.",
       backgroundImage: "../../public/judgement.png",
       chatHistory: [],
       currentMessage: "",
@@ -34,6 +35,7 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
     },
   ]);
 
+  // Azure Open AI와 연동하여 챗봇 응답을 가져오는 함수
   const getAzureOpenAIResponse = async (chatHistory) => {
     const endpointBase = process.env.REACT_APP_AZURE_OPENAI_ENDPOINT;
     const deploymentName = process.env.REACT_APP_AZURE_OPENAI_DEPLOYMENT_NAME;
@@ -42,12 +44,14 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
 
     const endpoint = `${endpointBase}/openai/deployments/${deploymentName}/chat/completions?api-version=${apiVersion}`;
 
+    // 시스템 프롬프트: 모델의 역할을 지정
     const systemPrompt = {
       role: "system",
       content:
         "당신은 역사 전문가 역할을 수행하며, 사용자가 입력하는 질문에 대해 전문적이고 정확한 답변을 제공합니다.",
     };
 
+    // chatHistory를 Azure Open AI가 요구하는 형식으로 변환
     const messages = [systemPrompt].concat(
       chatHistory.map((message) => ({
         role: message.isUser ? "user" : "assistant",
@@ -57,7 +61,7 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
 
     const requestBody = {
       messages,
-      max_tokens: 10000,
+      max_tokens: 1000,
       temperature: 0.7,
     };
 
@@ -111,6 +115,7 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
       isTyping: true,
     }));
 
+    // 사용자의 메시지와 기존 채팅 이력을 기반으로 응답 요청
     const responseText = await getAzureOpenAIResponse([
       ...selectedMoment.chatHistory,
       newMessage,
@@ -129,15 +134,18 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
     }));
   };
 
+  // 선택된 moment의 title, description, historicalContext를 번역
   useEffect(() => {
     const translateMoment = async () => {
       if (!selectedMoment) return;
 
+      // language가 한국어면 원본 그대로 사용
       if (language === "ko") {
         setTranslatedMoment(selectedMoment);
         return;
       }
 
+      // "jp"인 경우 targetLang을 "Japanese"로, 그 외(예: "en")는 영어로 처리
       const targetLang = language === "jp" ? "Japanese" : "English";
 
       try {
@@ -172,6 +180,7 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
     translateMoment();
   }, [selectedMoment, language]);
 
+  // 선택된 moment(= trial 페이지) 화면 렌더링 시 번역된 데이터를 사용
   if (selectedMoment) {
     return (
       <div className="history-moment-container trial-page">
@@ -183,7 +192,17 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
         <div className="trial-container">
           <div className="trial-header">
             <h1>{translatedMoment?.title || selectedMoment.title}</h1>
-            <p>{translatedMoment?.description || selectedMoment.description}</p>
+            {/* description의 개행 처리를 위해 split 사용 */}
+            <p>
+              {(translatedMoment?.description || selectedMoment.description)
+                .split("\n")
+                .map((line, idx) => (
+                  <span key={idx}>
+                    {line}
+                    <br />
+                  </span>
+                ))}
+            </p>
           </div>
           <div className="trial-content">
             <div className="history_chat-container">
@@ -212,9 +231,21 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
                       currentMessage: e.target.value,
                     }))
                   }
-                  placeholder="변호 내용을 입력하세요..."
+                  placeholder={
+                    language === "en"
+                      ? "Enter your defense..."
+                      : language === "jp"
+                      ? "弁護内容を入力してください..."
+                      : "변호 내용을 입력하세요..."
+                  }
                 />
-                <button type="submit">전송</button>
+                <button type="submit">
+                  {language === "en"
+                    ? "Send"
+                    : language === "jp"
+                    ? "送信"
+                    : "전송"}
+                </button>
               </form>
             </div>
             <div className="historical-context">
@@ -241,6 +272,7 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
     );
   }
 
+  // 선택되지 않은 초기(목록) 화면 렌더링 시 번역 처리: moment 목록의 static 텍스트는 그대로 출력하되, 페이지 제목은 번역
   return (
     <div className="history-moment-container selection-page">
       <MenuComponent
@@ -264,7 +296,14 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
               onClick={() => handleMomentSelect(moment)}
             >
               <h2>{moment.title}</h2>
-              <p>{moment.description}</p>
+              <p>
+                {moment.description.split("\n").map((line, idx) => (
+                  <span key={idx}>
+                    {line}
+                    <br />
+                  </span>
+                ))}
+              </p>
             </div>
           ))}
         </div>
