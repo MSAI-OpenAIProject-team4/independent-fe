@@ -52,6 +52,13 @@ function MenuComponent({ onLanguageChange = () => {}, selectedLanguage }) {
           >
             찰나의 역사
           </div>
+          <div className="section-divider"></div>
+          <div
+            className="menu-section"
+            onClick={() => handleNavigation("/campaign")}
+          >
+            캠페인
+          </div>
         </div>
         <div className="flags-container">
           <div className="menu-item" onClick={() => handleLanguageSelect("ko")}>

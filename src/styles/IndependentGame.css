@@ -50,17 +50,25 @@
 /* 헤더 스타일 */
 .scene-header {
   text-align: center;
-  margin-bottom: 16px;
+  margin-bottom: 30px;
+  margin-top: 30px;
   width: 100%;
   padding: 20px;
 }
 
 .scene-header h1 {
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   color: #333;
   margin-bottom: 10px;
   font-family: 'PAK YONG JUN', sans-serif;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.scene-header p {
+  margin-top: 15px;
+  font-size: 1.6rem;
+  color: #333;
+  font-family: 'PAK YONG JUN', sans-serif;
 }
 
 /* 씬 정보 */
@@ -71,7 +79,7 @@
 }
 
 .scene-info .date {
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   color: #4a90e2;
   font-weight: bold;
   padding: 8px 20px;
@@ -95,7 +103,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 30px;
   width: 100%;
-  margin-top: 20px;
+  margin-top: 50px;
 }
 
 .scene-option {
