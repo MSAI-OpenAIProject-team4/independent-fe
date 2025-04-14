@@ -32,7 +32,7 @@ function Chat({ language, onLanguageChange }) {
 
   // 일본어 텍스트에 포함된 숫자를 SSML <say-as> 태그로 감싸주는 헬퍼 함수
   const processTextForTTS = (text, language) => {
-    if (language === "ja") {
+    if (language === "jp") {
       // 단어 경계 내 숫자를 찾아서 say-as 태그로 감쌈 (cardinal)
       return text.replace(/\b\d+\b/g, (match) => {
         return `<say-as interpret-as="cardinal" language="ja-JP">${match}</say-as>`;
