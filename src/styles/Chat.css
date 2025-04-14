@@ -153,6 +153,7 @@
 }
 
 .message.bot::before {
+  z-index: 1 !important;
   content: "";
   position: absolute;
   left: -50px;
