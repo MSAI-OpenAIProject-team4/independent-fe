@@ -43,7 +43,14 @@ function MenuComponent({ onLanguageChange = () => {}, selectedLanguage }) {
             className="menu-section"
             onClick={() => handleNavigation("/game")}
           >
-            독립운동 게임
+            독립운동 체험
+          </div>
+          <div className="section-divider"></div>
+          <div
+            className="menu-section"
+            onClick={() => handleNavigation("/history")}
+          >
+            찰나의 역사
           </div>
         </div>
         <div className="flags-container">
