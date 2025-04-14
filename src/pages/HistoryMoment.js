@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/HistoryMoment.css";
 import MenuComponent from "../components/MenuComponent";
+import { translateText } from "../translations/translator";
 
-function HistoryMoment() {
+function HistoryMoment({ language = "ko", onLanguageChange }) {
   const navigate = useNavigate();
   const [selectedMoment, setSelectedMoment] = useState(null);
+  const [translatedMoment, setTranslatedMoment] = useState(null);
+
   const [moments, setMoments] = useState([
     {
       id: 1,
@@ -31,33 +34,30 @@ function HistoryMoment() {
     },
   ]);
 
-  // Azure Open AI와 연동하여 챗봇 응답을 가져오는 함수
   const getAzureOpenAIResponse = async (chatHistory) => {
     const endpointBase = process.env.REACT_APP_AZURE_OPENAI_ENDPOINT;
     const deploymentName = process.env.REACT_APP_AZURE_OPENAI_DEPLOYMENT_NAME;
     const apiVersion = process.env.REACT_APP_AZURE_OPENAI_API_VERSION;
     const apiKey = process.env.REACT_APP_AZURE_OPENAI_API_KEY;
 
-    // 요청 URL 구성 (Azure Open AI API 스펙에 따라 URL 형식이 다를 수 있음)
     const endpoint = `${endpointBase}/openai/deployments/${deploymentName}/chat/completions?api-version=${apiVersion}`;
 
-    // 시스템 프롬프트를 설정합니다.
     const systemPrompt = {
       role: "system",
       content:
         "당신은 역사 전문가 역할을 수행하며, 사용자가 입력하는 질문에 대해 전문적이고 정확한 답변을 제공합니다.",
     };
 
-    // chatHistory 배열을 Azure Open AI가 요구하는 메시지 형식으로 변환
-    const messages = chatHistory.map((message) => ({
-      role: message.isUser ? "user" : "assistant",
-      content: message.text,
-    }));
+    const messages = [systemPrompt].concat(
+      chatHistory.map((message) => ({
+        role: message.isUser ? "user" : "assistant",
+        content: message.text,
+      }))
+    );
 
-    // 요청에 필요한 추가 옵션 (max_tokens, temperature 등은 필요에 맞게 조정)
     const requestBody = {
       messages,
-      max_tokens: 1000,
+      max_tokens: 10000,
       temperature: 0.7,
     };
 
@@ -76,7 +76,6 @@ function HistoryMoment() {
       }
 
       const data = await response.json();
-      // Azure Open AI의 응답 구조에 따라 챗봇 응답을 추출 (예: data.choices[0].message.content)
       return data.choices?.[0]?.message?.content || "챗봇 응답 없음";
     } catch (error) {
       console.error("Azure Open AI 요청 오류", error);
@@ -96,7 +95,6 @@ function HistoryMoment() {
     }
   };
 
-  // 기존의 더미 응답 부분을 Azure Open AI 연동 코드로 대체
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!selectedMoment.currentMessage.trim()) return;
@@ -113,7 +111,6 @@ function HistoryMoment() {
       isTyping: true,
     }));
 
-    // 현재까지의 채팅 이력을 기반으로 Azure Open AI API 호출
     const responseText = await getAzureOpenAIResponse([
       ...selectedMoment.chatHistory,
       newMessage,
@@ -132,14 +129,61 @@ function HistoryMoment() {
     }));
   };
 
+  useEffect(() => {
+    const translateMoment = async () => {
+      if (!selectedMoment) return;
+
+      if (language === "ko") {
+        setTranslatedMoment(selectedMoment);
+        return;
+      }
+
+      const targetLang = language === "jp" ? "Japanese" : "English";
+
+      try {
+        const translatedTitle = await translateText(
+          selectedMoment.title,
+          targetLang
+        );
+        const translatedDescription = await translateText(
+          selectedMoment.description,
+          targetLang
+        );
+
+        const translatedContext = await Promise.all(
+          selectedMoment.historicalContext.map(async (ctx) => ({
+            title: await translateText(ctx.title, targetLang),
+            content: await translateText(ctx.content, targetLang),
+          }))
+        );
+
+        setTranslatedMoment({
+          ...selectedMoment,
+          title: translatedTitle,
+          description: translatedDescription,
+          historicalContext: translatedContext,
+        });
+      } catch (error) {
+        console.error("번역 실패:", error);
+        setTranslatedMoment(selectedMoment);
+      }
+    };
+
+    translateMoment();
+  }, [selectedMoment, language]);
+
   if (selectedMoment) {
     return (
       <div className="history-moment-container trial-page">
-        <MenuComponent onBackClick={handleBackClick} />
+        <MenuComponent
+          onBackClick={handleBackClick}
+          language={language}
+          onLanguageChange={onLanguageChange}
+        />
         <div className="trial-container">
           <div className="trial-header">
-            <h1>{selectedMoment.title}</h1>
-            <p>{selectedMoment.description}</p>
+            <h1>{translatedMoment?.title || selectedMoment.title}</h1>
+            <p>{translatedMoment?.description || selectedMoment.description}</p>
           </div>
           <div className="trial-content">
             <div className="history_chat-container">
@@ -174,8 +218,17 @@ function HistoryMoment() {
               </form>
             </div>
             <div className="historical-context">
-              <h2>역사적 맥락</h2>
-              {selectedMoment.historicalContext.map((context, index) => (
+              <h2>
+                {language === "en"
+                  ? "Historical Context"
+                  : language === "jp"
+                  ? "歴史的背景"
+                  : "역사적 맥락"}
+              </h2>
+              {(
+                translatedMoment?.historicalContext ||
+                selectedMoment.historicalContext
+              ).map((context, index) => (
                 <div key={index} className="context-item">
                   <h3>{context.title}</h3>
                   <p>{context.content}</p>
@@ -190,9 +243,19 @@ function HistoryMoment() {
 
   return (
     <div className="history-moment-container selection-page">
-      <MenuComponent onBackClick={handleBackClick} />
+      <MenuComponent
+        onBackClick={handleBackClick}
+        language={language}
+        onLanguageChange={onLanguageChange}
+      />
       <div className="moments-selection">
-        <h1>역사의 순간</h1>
+        <h1>
+          {language === "en"
+            ? "Moments in History"
+            : language === "jp"
+            ? "歴史の瞬間"
+            : "역사의 순간"}
+        </h1>
         <div className="moments-grid">
           {moments.map((moment) => (
             <div
