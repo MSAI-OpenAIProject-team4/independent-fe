@@ -25,6 +25,15 @@ const Campaign = () => {
     },
     {
       id: 3,
+      title: "우리는 같은 민족, 고려인입니다",
+      company: "굿네이버스",
+      description:
+        "독립운동가의 후손인 고려인들이 무국적과 빈곤의 굴레에서 벗어날 수 있도록 도와주세요. 대한독립군 총사령관 홍범도 장군, 독립운동가 최재형, 최봉설 등의 후손들이 지금도 어려운 환경에서 살아가고 있습니다. 이제는 우리가 그들을 기억하고 도와야 할 때입니다.",
+      image: "https://ad.goodneighbors.kr/diaspora24a/web/images/pic3_1.png",
+      link: "https://ad.goodneighbors.kr/diaspora24a/web/nr/index.html?utm_medium=display&utm_",
+    },
+    {
+      id: 4,
       title: "당연하지 않은 일상",
       company: "LG유플러스",
       description:
@@ -34,7 +43,7 @@ const Campaign = () => {
       link: "https://blog.uplus.co.kr/4547",
     },
     {
-      id: 4,
+      id: 5,
       title: "처음 입는 광복",
       company: "빙그레",
       description:

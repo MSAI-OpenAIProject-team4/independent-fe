@@ -1,0 +1,13 @@
+# Chat용 설정
+AZURE_CHAT_API_KEY=14d4SPZbrByPMrAhMlE8ivI8cxcxoXlkvRYKwXV4Eft4dUq8RNnzJQQJ99BDACHYHv6XJ3w3AAAAACOGIDJw
+AZURE_CHAT_API_VERSION=2024-12-01-preview
+AZURE_CHAT_ENDPOINT=https://inde-aiservice-eastus2.openai.azure.com/
+
+# Embedding용 설정
+AZURE_EMBED_API_KEY=5zFDr4pvzzpY8eC5FVp1lw8U0t0IZDE0qfXQK6SqQXGp3KbiK19xJQQJ99BDACHYHv6XJ3w3AAAAACOGZhPZ
+AZURE_EMBED_API_VERSION=2023-05-15
+AZURE_EMBED_ENDPOINT=https://ai-project2team4265750389133.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2023-05-15
+
+# 모델명
+AZURE_CHAT_DEPLOYMENT_NAME=gpt-4o
+AZURE_EMBED_DEPLOYMENT_NAME=text-embedding-ada-002
