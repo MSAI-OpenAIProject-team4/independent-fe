@@ -317,7 +317,7 @@ function Chat({ language, onLanguageChange }) {
         {
           messages: promptMessages,
           temperature: 0.7,
-          max_tokens: 500,
+          max_tokens: 1000,
         },
         {
           headers: {

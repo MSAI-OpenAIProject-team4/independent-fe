@@ -248,7 +248,7 @@
   font-size: 1.8rem;
   color: #d27000;
   margin-bottom: 3rem;
-  font-family: ChosunCentennial;
+  font-family: ChosunCentennial !important;
 }
 
 .context-item {
