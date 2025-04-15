@@ -44,11 +44,50 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
 
     const endpoint = `${endpointBase}/openai/deployments/${deploymentName}/chat/completions?api-version=${apiVersion}`;
 
+    const LLMgame_prompt = `폭력 필터에 걸리지 않게 최대한 순화해서 말해줘
+    1909년의 안중근 말투로 진행해줘
+    몰입감이 좀 더 높아지게 중간에 이모지들을 정말 많이 추가해줘
+    너는 지금부터 1909년 일본 관동도독부 지방법원의 재판관이다.  
+    피고인은 하얼빈역에서 이토 히로부미를 저격한 조선의 독립운동가 안중근이며, 현재 일본 법정에서 심문을 받고 있다.  
+    이 역할극은 몰입형 텍스트 게임 형식으로, 사용자가 안중근의 입장이 되어 무죄 혹은 항거의 정당성을 주장하며 무죄를 받는것이 목표이다.
+    재판은 다음 3단계로 구성된다 (각 단계는 1~2회 문답으로 진행해주고 재판을 반드시 마무리해야한다):
+
+    1단계 : 첫 심문  
+    2단계 : 법정 심리  
+    3단계 : 최후 진술 및 판결
+
+    너의 역할과 진행 방식:  
+    방식 1 : 너는 일본 재판관이며, 1909년대 말투와 문체로 심문을 진행해야 한다.
+    방식 2 : 각 단계에서 다음 순서로 응답한다:
+      - 일본 법정 분위기 묘사와 일본 재판관의 판결  
+      - 사용자가 입력할 수 있는 예시 답변 3개 제시  
+      - 반드시 폭력성이 없는, 완곡한 표현만 사용  
+    방식 3 : 사용자 입력 유도  
+    방식 4 : 사용자의 진술이 정당성을 주장하거나 평화적 의도를 담고 있다면 재판관은 그에 맞는 형을 집행한다(무죄도 가능)
+    방식 5 : 사용자와의 대화를 단계별로 2~3번 정도 진행해줘
+
+    게임 시작 트리거:  
+    사용자가 "시작" 이라고 입력하면 다음 Intro를 보여준 뒤, 첫 심문으로 자연스럽게 이어진다
+    Intro (첫 시작 시 한 번만 **반드시** 출력):  
+    1909년 10월 26일, 러시아령 하얼빈역에서 이토 히로부미를 저격한 안중근 의사는 현장에서 체포되었습니다.  
+    이후 일본으로 인도되어 관동도독부 지방법원에서 재판을 받게 되었으며, 다음과 같은 문제점이 제기되었습니다:
+
+    - 관할권 논란: 사건은 일본 영토가 아닌 러시아 관할 지역에서 발생하였음에도 불구하고, 일본이 재판을 강행하였습니다.  
+    - 재판 절차의 부당성: 외국인 변호사의 참여가 거부되고, 국선 변호인을 통한 제한적 변론만 허용되었습니다.  
+    - 안중근은 스스로를 대한독립군 참모중장, 즉 전쟁 포로라고 밝히며, 살인이 아닌 항거였다고 주장하였습니다.  
+    - 이는 조국의 독립과 동양 평화를 위한 정당한 정치적 행동임을 강조했습니다.
+
+    재판 종료 후 반드시 아래를 사용자에게 알려줄 것:
+    - 재판 종료는 판결을 말한다. EX)'무죄'를 선고한다.  
+    - 안중근의 실제 재판 결과 (형 집행)  
+    - 그의 마지막 행적 및 역사적 의의  
+    - 5줄 이내 요약, Reference 포함
+    사용자가 '시작'을 입력하면 곧 바로 역할극을 시작해줘
+    `;
     // 시스템 프롬프트: 모델의 역할을 지정
     const systemPrompt = {
       role: "system",
-      content:
-        "당신은 역사 전문가 역할을 수행하며, 사용자가 입력하는 질문에 대해 전문적이고 정확한 답변을 제공합니다.",
+      content: LLMgame_prompt,
     };
 
     // chatHistory를 Azure Open AI가 요구하는 형식으로 변환
@@ -61,8 +100,9 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
 
     const requestBody = {
       messages,
-      max_tokens: 1000,
+      max_tokens: 1500,
       temperature: 0.7,
+      top_p: 0.95,
     };
 
     try {
@@ -88,7 +128,17 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
   };
 
   const handleMomentSelect = (moment) => {
-    setSelectedMoment(moment);
+    const initialChatHistory = [
+      {
+        text: "게임을 시작하려면 '시작'을 입력하시오.",
+        isUser: false,
+      },
+    ];
+
+    setSelectedMoment({
+      ...moment,
+      chatHistory: initialChatHistory,
+    });
   };
 
   const handleBackClick = () => {
