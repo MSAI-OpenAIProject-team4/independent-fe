@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/HistoryMoment.css";
 import MenuComponent from "../components/MenuComponent";
+import QuizModal from "../components/QuizModal";
 import { translateText } from "../translations/translator";
 
 function HistoryMoment({ language = "ko", onLanguageChange }) {
-  const navigate = useNavigate();
-  const [selectedMoment, setSelectedMoment] = useState(null);
+    const navigate = useNavigate();
+    const [selectedMoment, setSelectedMoment] = useState(null);
   // 번역된 moment를 별도로 관리 (title, description, historicalContext)
   const [translatedMoment, setTranslatedMoment] = useState(null);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const messagesEndRef = useRef(null);
 
-  const [moments, setMoments] = useState([
+  const moments = [
     {
       id: 1,
       title: "안중근 의사의 재판",
@@ -33,7 +36,17 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
         },
       ],
     },
-  ]);
+  ];
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    if (selectedMoment?.chatHistory.length) {
+      scrollToBottom();
+    }
+  }, [selectedMoment?.chatHistory]);
 
   // Azure Open AI와 연동하여 챗봇 응답을 가져오는 함수
   const getAzureOpenAIResponse = async (chatHistory) => {
@@ -115,11 +128,14 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
       isTyping: true,
     }));
 
-    // 사용자의 메시지와 기존 채팅 이력을 기반으로 응답 요청
     const responseText = await getAzureOpenAIResponse([
       ...selectedMoment.chatHistory,
       newMessage,
     ]);
+
+    // 재판이 끝나는 시점인지 확인하는 로직을 수정
+    const isTrialEnd = responseText.includes("재판이 종료되었습니다") && 
+                      responseText.includes("사형을 선고합니다");
 
     setSelectedMoment((prev) => ({
       ...prev,
@@ -132,6 +148,13 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
       ],
       isTyping: false,
     }));
+
+    // 재판이 끝나면 퀴즈 모달을 표시
+    if (isTrialEnd) {
+      setTimeout(() => {
+        setShowQuiz(true);
+      }, 3000);
+    }
   };
 
   // 선택된 moment의 title, description, historicalContext를 번역
@@ -220,6 +243,7 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
                 {selectedMoment.isTyping && (
                   <div className="history_typing-indicator">...</div>
                 )}
+                <div ref={messagesEndRef} />
               </div>
               <form onSubmit={handleSendMessage} className="history_chat-input">
                 <input
@@ -246,6 +270,9 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
                     ? "送信"
                     : "전송"}
                 </button>
+                <button type="button" onClick={() => setShowQuiz(true)} className="test-quiz-button">
+                  퀴즈 테스트
+                </button>
               </form>
             </div>
             <div className="historical-context">
@@ -268,6 +295,7 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
             </div>
           </div>
         </div>
+        {showQuiz && <QuizModal onClose={() => setShowQuiz(false)} />}
       </div>
     );
   }
@@ -281,13 +309,7 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
         onLanguageChange={onLanguageChange}
       />
       <div className="moments-selection">
-        <h1>
-          {language === "en"
-            ? "Moments in History"
-            : language === "jp"
-            ? "歴史の瞬間"
-            : "역사의 순간"}
-        </h1>
+        <h1>역사적 순간 체험</h1>
         <div className="moments-grid">
           {moments.map((moment) => (
             <div
@@ -307,6 +329,7 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
             </div>
           ))}
         </div>
+        <p className="history-moment-ai-warning">※ AI가 재현한 역사적 순간은 실제와 다를 수 있으며, 참고용으로만 사용해주세요.</p>
       </div>
     </div>
   );

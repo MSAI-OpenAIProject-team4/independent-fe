@@ -45,6 +45,7 @@
   overflow-y: auto;
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
 /* 헤더 스타일 */
@@ -64,7 +65,7 @@
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.scene-header p {
+.scene-header p1 {
   margin-top: 15px;
   font-size: 1.6rem;
   color: #333;
@@ -444,4 +445,16 @@
   background-color: #c0392b;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.independent-game-ai-warning {
+    color: #ff6b6b;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    background-color: rgba(255, 107, 107, 0.1);
+    border-radius: 5px;
+    text-align: center;
+    width: 90%;
+    max-width: 1200px;
+    margin-top: auto;
 } 

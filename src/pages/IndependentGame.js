@@ -144,7 +144,7 @@ function IndependentGame({ language, onLanguageChange }) {
           <>
             <div className="scene-header">
               <h1>독립운동 선택</h1>
-              <p>참여하고 싶은 독립운동을 선택하시오</p>
+              <p1>참여하고 싶은 독립운동을 선택하시오</p1>
             </div>
             <div className="scene-selection">
               {Object.entries(historicalEvents).map(([key, event]) => (
@@ -225,6 +225,7 @@ function IndependentGame({ language, onLanguageChange }) {
             </button>
           </div>
         )}
+        <p className="independent-game-ai-warning">※ AI가 생성한 게임 내용은 실제 역사와 다를 수 있으며, 교육적 참고용으로만 사용해주세요.</p>
       </div>
     </div>
   );
