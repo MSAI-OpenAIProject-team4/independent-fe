@@ -351,6 +351,10 @@ function Chat({ language, onLanguageChange }) {
         뒤로가기
       </button>
       <div className="chat-container">
+        <div className="chat-header">
+          <h1>독립운동가와의 대화</h1>
+          <p className="chat-ai-warning">※ AI는 실수할 수 있으며, 제공되는 정보는 참고용으로만 사용해주세요.</p>
+        </div>
         <div className="messages">
           {translatedMessages.map((message, index) => (
             <div

@@ -1,0 +1,226 @@
+.quiz-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.quiz-modal {
+    background: url("../../public/background_quiz.png");
+    background-size: cover;
+    background-position: center;
+    padding: 2rem;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 600px;
+    color: white;
+    font-family: 'PAK YONG JUN', sans-serif;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+    animation: slideUp 0.5s ease-in-out;
+    position: relative;
+}
+
+.quiz-modal::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 15px;
+    z-index: 0;
+}
+
+.quiz-progress, .quiz-question, .quiz-options, .quiz-result-container, .quiz-close-button {
+    position: relative;
+    z-index: 1;
+}
+
+.quiz-progress {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: rgba(255, 215, 0, 0.8);
+    font-size: 1.4rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.quiz-question {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.quiz-option {
+    position: relative;
+    padding: 1.2rem;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(0, 0, 0, 0.4);
+    color: rgba(255, 255, 255, 0.9);
+    text-align: left;
+    font-size: 1.3rem;
+    z-index: 1;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.quiz-option:hover {
+    background: rgba(255, 215, 0, 0.15);
+    border-color: rgba(255, 215, 0, 0.5);
+    transform: translateY(-2px);
+}
+
+.quiz-option.selected {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: rgba(255, 215, 0, 0.6);
+}
+
+.quiz-option.correct {
+    background: rgba(46, 204, 113, 0.3);
+    border-color: rgba(46, 204, 113, 0.6);
+}
+
+.quiz-option.incorrect {
+    background: rgba(231, 76, 60, 0.3);
+    border-color: rgba(231, 76, 60, 0.6);
+}
+
+.quiz-result {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 1rem;
+    border-radius: 10px;
+    background: rgba(177, 156, 217, 0.1);
+    color: #b19cd9;
+    font-size: 1.3rem;
+}
+
+.quiz-result-container {
+    text-align: center;
+    padding: 2rem;
+}
+
+.quiz-result-title {
+    font-size: 2.2rem;
+    color: rgba(255, 215, 0, 0.8);
+    margin-bottom: 2rem;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.quiz-result-score {
+    font-size: 1.8rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 2rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.quiz-result-message {
+    font-size: 1.5rem;
+    color: rgba(255, 215, 0, 0.8);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.quiz-close-button {
+    display: block;
+    margin: 2rem auto 0;
+    padding: 1.2rem 3rem;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255, 215, 0, 0.7);
+    color: rgba(0, 0, 0, 0.8);
+    font-weight: bold;
+    font-size: 1.3rem;
+    cursor: pointer;
+    font-family: 'PAK YONG JUN', sans-serif;
+    transition: all 0.3s ease;
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.quiz-close-button:hover {
+    background: rgba(255, 215, 0, 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.quiz-intro-container {
+    text-align: left;
+    padding: 1.5rem;
+    max-height: 80vh;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    position: relative;
+    z-index: 1;
+}
+
+.quiz-intro-container::-webkit-scrollbar {
+    display: none;
+}
+
+.quiz-intro-title {
+    font-size: 2rem;
+    color: #ffd700;
+    margin-bottom: 2rem;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+}
+
+.quiz-intro-content {
+    color: #ffffff;
+    font-size: 1.3rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.4);
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+} 
