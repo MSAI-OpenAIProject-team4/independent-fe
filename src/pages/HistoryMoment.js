@@ -6,8 +6,8 @@ import QuizModal from "../components/QuizModal";
 import { translateText } from "../translations/translator";
 
 function HistoryMoment({ language = "ko", onLanguageChange }) {
-    const navigate = useNavigate();
-    const [selectedMoment, setSelectedMoment] = useState(null);
+  const navigate = useNavigate();
+  const [selectedMoment, setSelectedMoment] = useState(null);
   // 번역된 moment를 별도로 관리 (title, description, historicalContext)
   const [translatedMoment, setTranslatedMoment] = useState(null);
   const [showQuiz, setShowQuiz] = useState(false);
@@ -140,10 +140,21 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
     }
   };
 
-  const handleMomentSelect = (moment) => {
+  const handleMomentSelect = async (moment) => {
     const initialChatHistory = [
       {
-        text: "게임을 시작하려면 '시작'을 입력하시오.",
+        text:
+          language === "ko"
+            ? "게임을 시작하려면 '시작'을 입력하시오."
+            : language === "jp"
+            ? await translateText(
+                "게임을 시작하려면 '시작'을 입력하시오.",
+                "Japanese"
+              )
+            : await translateText(
+                "게임을 시작하려면 '시작'을 입력하시오.",
+                "English"
+              ),
         isUser: false,
       },
     ];
@@ -184,8 +195,9 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
     ]);
 
     // 재판이 끝나는 시점인지 확인하는 로직을 수정
-    const isTrialEnd = responseText.includes("재판이 종료되었습니다") && 
-                      responseText.includes("사형을 선고합니다");
+    const isTrialEnd =
+      responseText.includes("재판이 종료되었습니다") &&
+      responseText.includes("사형을 선고합니다");
 
     setSelectedMoment((prev) => ({
       ...prev,
@@ -320,7 +332,11 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
                     ? "送信"
                     : "전송"}
                 </button>
-                <button type="button" onClick={() => setShowQuiz(true)} className="test-quiz-button">
+                <button
+                  type="button"
+                  onClick={() => setShowQuiz(true)}
+                  className="test-quiz-button"
+                >
                   퀴즈 테스트
                 </button>
               </form>
@@ -379,7 +395,10 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
             </div>
           ))}
         </div>
-        <p className="history-moment-ai-warning">※ AI가 재현한 역사적 순간은 실제와 다를 수 있으며, 참고용으로만 사용해주세요.</p>
+        <p className="history-moment-ai-warning">
+          ※ AI가 재현한 역사적 순간은 실제와 다를 수 있으며, 참고용으로만
+          사용해주세요.
+        </p>
       </div>
     </div>
   );
