@@ -19,8 +19,12 @@ const MatchResult = () => {
             try {
                 const capturedImage = location.state?.capturedImage;
                 
-                const response = await axios.post('http://localhost:5000/compare', {
+                const response = await axios.post('http://20.84.89.102/api/compare/', {
                     image: capturedImage || 'test_image'
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
                 });
 
                 console.log('서버 응답:', response.data);

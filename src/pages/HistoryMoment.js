@@ -6,8 +6,8 @@ import QuizModal from "../components/QuizModal";
 import { translateText } from "../translations/translator";
 
 function HistoryMoment({ language = "ko", onLanguageChange }) {
-  const navigate = useNavigate();
-  const [selectedMoment, setSelectedMoment] = useState(null);
+    const navigate = useNavigate();
+    const [selectedMoment, setSelectedMoment] = useState(null);
   // 번역된 moment를 별도로 관리 (title, description, historicalContext)
   const [translatedMoment, setTranslatedMoment] = useState(null);
   const [showQuiz, setShowQuiz] = useState(false);
