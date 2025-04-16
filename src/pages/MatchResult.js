@@ -10,14 +10,14 @@ const MatchResult = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showBiography, setShowBiography] = useState(false);
-    const [showFullContent, setShowFullContent] = useState(false);
 
     useEffect(() => {
-        let isMounted = true;  // 컴포넌트 마운트 상태 추적
+        let isMounted = true;
 
         const compareImages = async () => {
             try {
                 const capturedImage = location.state?.capturedImage;
+                console.log('전송할 이미지:', capturedImage ? '이미지 있음' : '이미지 없음');
                 
                 const response = await axios.post('http://20.84.89.102/api/compare/', {
                     image: capturedImage || 'test_image'
@@ -27,20 +27,46 @@ const MatchResult = () => {
                     }
                 });
 
-                console.log('서버 응답:', response.data);
+                console.log('서버 응답 전체:', response);
                 
-                if (isMounted) {  // 컴포넌트가 마운트된 상태일 때만 상태 업데이트
-                    if (response.data.error) {
-                        setError(response.data.error);
+                // NaN을 null로 변환하는 함수
+                const convertNaNToNull = (str) => {
+                    return str.replace(/"([^"]+)":\s*NaN/g, '"$1": null');
+                };
+
+                // 응답이 문자열인 경우 JSON으로 파싱
+                let responseData;
+                if (typeof response.data === 'string') {
+                    try {
+                        // NaN을 null로 변환하여 파싱
+                        const cleanedData = convertNaNToNull(response.data);
+                        responseData = JSON.parse(cleanedData);
+                        console.log('파싱된 응답 데이터:', responseData);
+                    } catch (parseError) {
+                        console.error('JSON 파싱 에러:', parseError);
+                        throw new Error('서버 응답을 처리할 수 없습니다.');
+                    }
+                } else {
+                    responseData = response.data;
+                }
+                
+                if (isMounted) {
+                    if (responseData.error) {
+                        console.error('서버 에러:', responseData.error);
+                        setError(responseData.error);
+                    } else if (!responseData.matchedFighter) {
+                        console.error('매칭된 독립운동가 정보 없음');
+                        setError('매칭된 독립운동가 정보를 찾을 수 없습니다.');
                     } else {
-                        setMatchResult(response.data);
+                        console.log('매칭된 독립운동가:', responseData.matchedFighter);
+                        setMatchResult(responseData);
                     }
                     setLoading(false);
                 }
             } catch (err) {
-                console.error('Error:', err);
+                console.error('API 호출 에러:', err);
                 if (isMounted) {
-                    setError(err.response?.data?.error || err.message);
+                    setError(err.message || '서버 연결에 실패했습니다.');
                     setLoading(false);
                 }
             }
@@ -48,39 +74,36 @@ const MatchResult = () => {
 
         compareImages();
 
-        // 클린업 함수
         return () => {
             isMounted = false;
         };
-    }, []); // location.state 의존성 제거
+    }, [location.state?.capturedImage]);
+
+    useEffect(() => {
+        if (matchResult) {
+            console.log('현재 매칭 결과:', matchResult);
+        }
+    }, [matchResult]);
+
+    const handleStartChat = () => {
+        if (matchResult?.matchedFighter) {
+            console.log('채팅으로 전달되는 데이터:', matchResult.matchedFighter);
+            navigate('/chat', {
+                state: {
+                    matchedFighter: matchResult.matchedFighter
+                }
+            });
+        } else {
+            console.error('채팅을 시작할 수 없습니다: 매칭 데이터 없음');
+        }
+    };
 
     const handleNextClick = () => {
         if (!showBiography) {
             setShowBiography(true);
-        } else if (matchResult) {
-            navigate('/chat', {
-                state: {
-                    matchedFighter: {
-                        name: matchResult.matchedFighter.name,
-                        nameHanja: matchResult.matchedFighter.nameHanja,
-                        movementFamily: matchResult.matchedFighter.movementFamily,
-                        orders: matchResult.matchedFighter.orders,
-                        addressBirth: matchResult.matchedFighter.addressBirth,
-                        activities: matchResult.matchedFighter.activities,
-                        references: matchResult.matchedFighter.references,
-                        image_url: matchResult.matchedFighter.image_url,
-                        content: matchResult.matchedFighter.content
-                    }
-                }
-            });
+        } else {
+            handleStartChat();
         }
-    };
-
-    const summarizeContent = (content) => {
-        if (!content) return '';
-        const firstSentence = content.split('.')[0] + '.';
-        const summary = content.length > 150 ? content.substring(0, 150) + '...' : content;
-        return showFullContent ? content : summary;
     };
 
     if (loading) {
@@ -104,70 +127,90 @@ const MatchResult = () => {
         );
     }
 
-    if (!matchResult) {
-        return null;  // 데이터가 없을 때 빈 화면 표시
-    }
-
-    if (!showBiography) {
+    if (!matchResult?.matchedFighter) {
+        console.error('매칭 결과 없음');
         return (
             <div className="match-result">
-                <button className="menu-button" onClick={() => navigate('/photo')}>
-                    메뉴
-                </button>
-                <h2 className="match-title">{matchResult?.matchedFighter?.name}님과 연결되었습니다</h2>
-                <p className="similarity">유사도: {(matchResult?.similarity * 100).toFixed(1)}%</p>
-                
-                <div className="image-comparison">
-                    <div className="user-image">
-                        <img src={location.state?.capturedImage} alt="사용자" />
-                    </div>
-                    <div className="historical-image">
-                        <img src={matchResult?.matchedFighter?.image_url} alt={matchResult?.matchedFighter?.name} />
-                    </div>
-                </div>
-
-                <button className="next-button" onClick={handleNextClick}>
-                    다음
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
+                <h2 className="match-title">죄송합니다</h2>
+                <p className="error-message">매칭 결과를 찾을 수 없습니다.</p>
+                <button className="retry-button" onClick={() => navigate('/photo')}>
+                    다시 시도하기
                 </button>
             </div>
         );
     }
 
-    return (
+    return showBiography ? (
         <div className="biography">
             <div className="biography-container">
                 <div className="biography-image">
-                    <img src={matchResult?.matchedFighter?.image_url} alt={matchResult?.matchedFighter?.name} />
+                    <img 
+                        src={matchResult.matchedFighter.image_url} 
+                        alt={matchResult.matchedFighter.name}
+                        onError={(e) => {
+                            console.error('이미지 로딩 실패:', e);
+                            e.target.onerror = null;
+                            e.target.src = '/placeholder.jpg';
+                        }}
+                    />
                 </div>
                 <div className="biography-info">
-                    <h2>{matchResult?.matchedFighter?.name} ({matchResult?.matchedFighter?.nameHanja})</h2>
+                    <h2>{matchResult.matchedFighter.name} ({matchResult.matchedFighter.nameHanja})</h2>
                     <div className="info-row">
                         <div className="info-section">
                             <h3>생애</h3>
-                            <p>{matchResult?.matchedFighter?.bornDied}</p>
+                            <p>{matchResult.matchedFighter.bornDied || '정보 없음'}</p>
                         </div>
                         <div className="info-section">
                             <h3>훈격</h3>
-                            <p>{matchResult?.matchedFighter?.orders}</p>
+                            <p>{matchResult.matchedFighter.orders || '정보 없음'}</p>
                         </div>
                     </div>
                     <div className="info-section">
                         <h3>주요 활동</h3>
                         <div className="activities-content">
-                            <p className="p1">{matchResult?.matchedFighter?.activities}</p>
+                            <p className="p1">{matchResult.matchedFighter.activities || '정보 없음'}</p>
                         </div>
                     </div>
                 </div>
             </div>
-
             <div className="button-container">
-                <button className="chat-button" onClick={handleNextClick}>
+                <button className="chat-button" onClick={handleStartChat}>
                     대화하기
                 </button>
             </div>
+        </div>
+    ) : (
+        <div className="match-result">
+            <button className="menu-button" onClick={() => navigate('/photo')}>
+                메뉴
+            </button>
+            <h2 className="match-title">{matchResult.matchedFighter.name}님과 연결되었습니다</h2>
+            <p className="similarity">유사도: {matchResult.similarity ? `${(matchResult.similarity * 100).toFixed(1)}%` : 'NaN%'}</p>
+            
+            <div className="image-comparison">
+                <div className="user-image">
+                    <img src={location.state?.capturedImage} alt="사용자" />
+                </div>
+                <div className="historical-image">
+                    <img 
+                        src={matchResult.matchedFighter.image_url} 
+                        alt={matchResult.matchedFighter.name}
+                        onError={(e) => {
+                            console.error('이미지 로딩 실패:', e);
+                            e.target.onerror = null;
+                            e.target.src = '/placeholder.jpg';
+                        }}
+                    />
+                </div>
+            </div>
+
+            <button className="next-button" onClick={handleNextClick}>
+                다음
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </button>
         </div>
     );
 };

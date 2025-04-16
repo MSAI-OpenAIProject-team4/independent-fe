@@ -195,6 +195,7 @@
   word-break: break-word; /* 단어 길이에 따른 줄바꿈 */
   overflow-wrap: break-word;
   max-width: 80%;
+  font-size: 1.2rem;
 }
 
 .history_message.user {

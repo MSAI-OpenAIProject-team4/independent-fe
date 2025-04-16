@@ -19,26 +19,12 @@
   display: block !important;
 }
 
-.back-button {
-  position: absolute;
-  top: 0.1rem;
-  right: 2rem;
+.chat-header h1 {
   font-family: "PAK YONG JUN", sans-serif;
-  font-size: 1.2rem;
-  padding: 0.8rem 1.5rem;
-  border: none;
-  border-radius: 50px;
-  background-color: #333;
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin: 20px;
-  z-index: 10;
-}
-
-.back-button:hover {
-  background-color: #555;
-  transform: scale(1.05);
+  font-size: 2.4rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
 }
 
 .chat-container {
@@ -189,6 +175,11 @@
   color: #666;
 }
 
+.message-input:disabled {
+  background-color: rgba(0, 0, 0, 0.05);
+  cursor: not-allowed;
+}
+
 .send-button {
   padding: 0.8rem 1.5rem;
   border: none;
@@ -201,9 +192,15 @@
   transition: all 0.3s ease;
 }
 
-.send-button:hover {
+.send-button:hover:not(:disabled) {
   background-color: #555;
   transform: scale(1.05);
+}
+
+.send-button:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* 국기 아이콘 스타일 제거 */
@@ -252,4 +249,28 @@
   background-color: rgba(255, 107, 107, 0.1);
   border-radius: 5px;
   text-align: center;
+}
+
+/* 로딩 인디케이터 스타일 */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  font-family: "PAK YONG JUN", sans-serif;
+  font-size: 1rem;
+  color: #666;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
 }

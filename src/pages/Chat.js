@@ -1,6 +1,6 @@
 // src/pages/Chat.js
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../styles/Chat.css";
 import axios from "axios";
 import Papa from "papaparse";
@@ -9,10 +9,14 @@ import { translateText } from "../translations/translator";
 
 function Chat({ language, onLanguageChange }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const matchedFighter = location.state?.matchedFighter;
   const messagesEndRef = useRef(null);
   const [messages, setMessages] = useState([
     {
-      text: "안녕하시오! 만나뵙게 되어 반갑소. 이곳은 독립운동가와 대화할 수 있는 공간이오. 닮은꼴 독립운동가에서 나온 인물, 혹은 궁금한 독립운동가의 성함을 작성하여 주시오.",
+      text: matchedFighter 
+        ? `안녕하시오! 저는 ${matchedFighter.name}이오. 제가 걸어온 독립운동의 길에 대해 무엇이든 물어보시오.`
+        : "안녕하시오! 만나뵙게 되어 반갑소. 이곳은 독립운동가와 대화할 수 있는 공간이오. 궁금한 독립운동가의 성함을 작성하여 주시오.",
       isUser: false,
     },
   ]);
@@ -21,15 +25,11 @@ function Chat({ language, onLanguageChange }) {
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
   const [currentAudio, setCurrentAudio] = useState(null);
   const [captions, setCaptions] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [knowledgeBase, setKnowledgeBase] = useState([]);
 
-  const endpoint = process.env.REACT_APP_AZURE_OPENAI_ENDPOINT;
-  const apiKey = process.env.REACT_APP_AZURE_OPENAI_API_KEY;
-  const apiVersion = process.env.REACT_APP_AZURE_OPENAI_API_VERSION;
-  const deploymentName = process.env.REACT_APP_AZURE_OPENAI_DEPLOYMENT_NAME;
   const speechKey = process.env.REACT_APP_AZURE_SPEECH_KEY;
   const speechRegion = process.env.REACT_APP_AZURE_SPEECH_REGION;
-
 
   // 일본어 텍스트에 포함된 숫자를 SSML <say-as> 태그로 감싸주는 헬퍼 함수
   const processTextForTTS = (text, language) => {
@@ -208,24 +208,37 @@ function Chat({ language, onLanguageChange }) {
     });
   };
 
-  const handleBackClick = () => {
-    navigate("/");
-  };
-
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (inputMessage.trim() === "") return;
+    if (inputMessage.trim() === "" || isLoading) return;
 
     const userMessage = { text: inputMessage, isUser: true };
     setMessages((prev) => [...prev, userMessage]);
     setInputMessage("");
+    setIsLoading(true);
 
     try {
+      console.log("API 요청 데이터:", {
+        question: inputMessage,
+        language: language,
+        matchedFighter: matchedFighter
+      });
+
       const response = await axios.post(
         'http://20.84.89.102/api/chat/',
         {
           question: inputMessage,
-          language: language
+          language: language,
+          matchedFighter: matchedFighter ? {
+            name: matchedFighter.name,
+            nameHanja: matchedFighter.nameHanja,
+            movementFamily: matchedFighter.movementFamily,
+            orders: matchedFighter.orders,
+            addressBirth: matchedFighter.addressBirth,
+            activities: matchedFighter.activities,
+            content: matchedFighter.content,
+            references: matchedFighter.references
+          } : null
         },
         {
           headers: {
@@ -234,35 +247,38 @@ function Chat({ language, onLanguageChange }) {
         }
       );
 
-      const { answer, citations } = response.data;
-      
-      // 봇 응답 메시지 추가
-      setMessages((prev) => [...prev, { text: answer, isUser: false }]);
-      
-      // 인용구 설정
-      if (citations && citations.length > 0) {
-        const formattedCitations = citations.map((citation, idx) => ({
-          title: `참고 ${idx + 1}`,
-          content: `${citation.title}\n${citation.reference}`
-        }));
-        setCaptions(formattedCitations);
+      console.log("서버 응답:", response.data);
+
+      if (response.data && response.data.answer) {
+        const botMessage = { text: response.data.answer, isUser: false };
+        setMessages((prev) => [...prev, botMessage]);
+        
+        if (response.data.citations && response.data.citations.length > 0) {
+          const formattedCitations = response.data.citations.map((citation, idx) => ({
+            title: `참고 ${idx + 1}`,
+            content: `${citation.title}\n${citation.reference}`
+          }));
+          setCaptions(formattedCitations);
+        }
+      } else {
+        throw new Error("서버 응답에 답변이 없습니다.");
       }
 
     } catch (error) {
       console.error("API 오류:", error);
-      setMessages((prev) => [
-        ...prev,
-        { text: "오류가 발생했소. 다시 시도해보시오.", isUser: false },
-      ]);
+      const errorMessage = { 
+        text: "죄송하오. 답변 중에 오류가 발생했소. 다시 한 번 질문해 주시겠소?", 
+        isUser: false 
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="chat">
       <MenuComponent onLanguageChange={onLanguageChange} />
-      <button className="back-button" onClick={handleBackClick}>
-        뒤로가기
-      </button>
       <div className="chat-container">
         <div className="chat-header">
           <h1>독립운동가와의 대화</h1>
@@ -277,6 +293,11 @@ function Chat({ language, onLanguageChange }) {
               {message.text}
             </div>
           ))}
+          {isLoading && (
+            <div className="message bot">
+              <div className="typing-indicator">답변을 생성하고 있습니다...</div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
         <form className="input-form" onSubmit={handleSendMessage}>
@@ -286,8 +307,9 @@ function Chat({ language, onLanguageChange }) {
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder="메시지를 입력하세요..."
             className="message-input"
+            disabled={isLoading}
           />
-          <button type="submit" className="send-button">
+          <button type="submit" className="send-button" disabled={isLoading}>
             전송
           </button>
         </form>
