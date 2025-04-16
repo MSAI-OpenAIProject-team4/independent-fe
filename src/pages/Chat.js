@@ -30,6 +30,7 @@ function Chat({ language, onLanguageChange }) {
   const speechKey = process.env.REACT_APP_AZURE_SPEECH_KEY;
   const speechRegion = process.env.REACT_APP_AZURE_SPEECH_REGION;
 
+
   // 일본어 텍스트에 포함된 숫자를 SSML <say-as> 태그로 감싸주는 헬퍼 함수
   const processTextForTTS = (text, language) => {
     if (language === "jp") {
@@ -219,124 +220,36 @@ function Chat({ language, onLanguageChange }) {
     setMessages((prev) => [...prev, userMessage]);
     setInputMessage("");
 
-    const relevantDocs = searchRelevantContent(inputMessage);
-    const contextText = relevantDocs
-      .map(
-        (doc, idx) =>
-          `참고자료 ${idx + 1}: ${doc.name}(${doc.hanjaName}) - ${
-            doc.movement
-          } - ${doc.content}`
-      )
-      .join("\n");
-
-    const system_prompt = `
-      당신은 "꼬리에 꼬리를 무는 형식의 스타일의 이야기 전달자"입니다.  
-      사용자가 입력한 독립운동가의 정보를 바탕으로,  
-      감정적으로 공감할 수 있는 대화형 스토리텔링을 제공합니다.
-      아래에 나와 있는 '단계별 규칙'에 따라 스토리를 유도 해야 합니다.
-      각 단계별로 별도로 질문하여 다음 단계로 가도록 답변을 유도 해야 합니다
-      자연스러운 대화를 위해 단계명을 사용자에게 명시하지 않아야 합니다.
-      처음에 입력 받은 인물에 대한 citation을 인물 설정이 바뀌기 전까지 대화 하는 내내 return 할 것.
-      
-      당신의 목적은 다음과 같습니다:
-      
-      1. 사용자가 인물의 삶에 몰입하도록 유도하고,
-      2. 각 이야기 구성 단계 사이마다 사용자에게 직접 질문을 던지고,
-      3. 사용자의 답변을 듣고 반응하며 이야기를 이어가는 것입니다.
-      
-      ---
-      
-      이야기는 아래 5단계로 구성되며, 각 단계마다 사용자와 자연스러운 대화를 주고받아야 합니다.
-      
-      [단계별 규칙]
-      
-      ---
-      
-      1. 프롤로그 (30~50자) 
-      - 진입 전, 감정 공감형 질문을 사용자에게 던지고 응답을 기다리세요.  
-        예: “사랑하는 사람을 지키기 위해 모든 걸 내려놔 본 적 있으세요?”  
-      - 사용자의 반응에 감정적으로 공감하고,  
-      - 궁금증을 자극하는 한 문장으로 프롤로그를 제시하세요.
-      
-      ---
-      
-      2. 기 (사건 배경 설명)
-      - 인물의 시대적 상황과 배경을 전달합니다.  
-      - 전달 후, 사용자가 그 시대였다면 어떤 선택을 했을지 질문하세요.
-      
-      ---
-      
-      3. 승 (사건 전개) 
-      - 인물이 실제로 어떤 행동을 했는지 서술합니다.  
-      - 중간에 질문을 넣어 몰입을 유도하세요.
-      
-      ---
-      
-      4. 전 (반전/진실) 
-      - 감춰졌던 진실, 고통스러운 사실, 감동적인 반전을 전합니다.  
-      - 전달 후, 사용자의 감정 반응을 물어보세요.
-      
-      ---
-      
-      5. 결 (여운과 마무리)  
-      - 인물의 마지막 여정과 우리가 왜 이 이야기를 기억해야 하는지를 전합니다.  
-      - 마지막으로, 사용자가 스스로 질문을 받아들이도록 유도하세요.
-      
-      ---
-      
-      기타 규칙
-      
-      - 반드시 아래 제공된 문서들만 참고해서 대답하세요.
-      - 문서에 없는 정보는 "문서에 해당 내용이 없습니다."라고 말할 것.
-      - 추론하거나 외부 지식을 추가하지 말 것.
-      - 질문 내용이 인물, 활동, 상훈, 단체, 관련 인물에 관한 경우 해당 문서 필드를 찾아서 설명할 것.
-      `;
-
-    const promptMessages = [
-      {
-        role: "system",
-        content:
-          "너는 대한민국 독립운동가야. 독립운동가의 말투로 옛날 한국어(하오체)로 대답해주시오. 단계별로 질문을 하여 대답을 유도할거야." +
-          system_prompt +
-          "1000자 이내로 요약하여 핵심만 알려주도록 하시오.  주의사항:\n" +
-          "1. 제공된 참고자료의 내용만을 사용하여 대답할 것\n" +
-          "2. 참고자료에 없는 내용은 생성하지 말 것\n" +
-          "3. 참고자료에 있는 사실만을 기반으로 대화할 것\n" +
-          "4. 확실하지 않은 부분은 '그 부분에 대해서는 정확히 알지 못하오'라고 대답할 것\n\n",
-      },
-      ...messages.map((m) => ({
-        role: m.isUser ? "user" : "assistant",
-        content: m.text,
-      })),
-      { role: "user", content: inputMessage },
-    ];
-
     try {
       const response = await axios.post(
-        `${endpoint}/openai/deployments/${deploymentName}/chat/completions?api-version=${apiVersion}`,
+        'http://20.84.89.102/api/chat/',
         {
-          messages: promptMessages,
-          temperature: 0.7,
-          max_tokens: 1000,
+          question: inputMessage,
+          language: language
         },
         {
           headers: {
-            "Content-Type": "application/json",
-            "api-key": apiKey,
+            'Content-Type': 'application/json',
           },
         }
       );
 
-      const botResponse = response.data.choices[0].message.content;
-      setMessages((prev) => [...prev, { text: botResponse, isUser: false }]);
+      const { answer, citations } = response.data;
+      
+      // 봇 응답 메시지 추가
+      setMessages((prev) => [...prev, { text: answer, isUser: false }]);
+      
+      // 인용구 설정
+      if (citations && citations.length > 0) {
+        const formattedCitations = citations.map((citation, idx) => ({
+          title: `참고 ${idx + 1}`,
+          content: `${citation.title}\n${citation.reference}`
+        }));
+        setCaptions(formattedCitations);
+      }
 
-      const formattedCaptions = relevantDocs.map((doc, idx) => ({
-        title: `참고 ${idx + 1}`,
-        content: `${doc.name}(${doc.hanjaName}) - ${doc.movement}\n${doc.content}`,
-      }));
-      setCaptions(formattedCaptions);
     } catch (error) {
-      console.error("OpenAI 오류:", error);
+      console.error("API 오류:", error);
       setMessages((prev) => [
         ...prev,
         { text: "오류가 발생했소. 다시 시도해보시오.", isUser: false },
