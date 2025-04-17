@@ -224,7 +224,7 @@ function Chat({ language, onLanguageChange }) {
       // 매칭된 인물이 없고, 첫 메시지인 경우 (인물 검색)
       if (!matchedFighter && messages.length === 1) {
         const response = await axios.post(
-          'http://20.84.89.102/api/chat/',
+          'https://independent.eastus.cloudapp.azure.com/api/chat/',
           {
             question: inputMessage,
             language: language,

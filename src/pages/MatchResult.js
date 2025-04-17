@@ -27,7 +27,7 @@ const MatchResult = () => {
                     throw new Error('올바른 이미지 형식이 아닙니다.');
                 }
 
-                const response = await axios.post('http://20.84.89.102/api/compare/', {
+                const response = await axios.post('https://independent.eastus.cloudapp.azure.com/api/compare/', {
                     image: capturedImage
                 }, {
                     headers: {
