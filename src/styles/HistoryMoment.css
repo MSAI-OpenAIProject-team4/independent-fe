@@ -188,6 +188,7 @@
 
 .history_message {
   white-space: pre-wrap;
+  word-wrap: break-word;
   display: inline-block; /* 콘텐츠에 맞게 늘어남 */
   max-width: 70%; /* 너비 제한: 필요에 따라 조정 */
   margin-bottom: 1rem;
@@ -197,6 +198,22 @@
   overflow-wrap: break-word;
   max-width: 80%;
   font-size: 1.2rem;
+  text-align: left;
+}
+
+.history_message ul,
+.history_message ol {
+  /* 마커(•)를 콘텐츠 패딩 안으로 들여오기 */
+  list-style-position: inside;
+  /* ul/ol 자체에 왼쪽 여백 추가 (필요에 따라 값 조절) */
+  padding-inline-start: 1.5rem;
+  margin-block-start: 0.5rem;
+  margin-block-end: 0.5rem;
+}
+
+/* li별 아래쪽 여백(선택) */
+.history_message li {
+  margin-bottom: 0.25rem;
 }
 
 .history_message.user {
@@ -207,6 +224,7 @@
 
 .history_message.bot {
   background: rgb(14, 0, 24);
+  /* padding-left: 20px; */
   margin-right: auto;
   align-self: flex-start;
 }

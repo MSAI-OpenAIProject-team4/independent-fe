@@ -4,6 +4,8 @@ import "../styles/HistoryMoment.css";
 import MenuComponent from "../components/MenuComponent";
 import QuizModal from "../components/QuizModal";
 import { translateText } from "../translations/translator";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 function HistoryMoment({ language = "ko", onLanguageChange }) {
   const navigate = useNavigate();
@@ -295,13 +297,23 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
             <div className="history_chat-container">
               <div className="history_chat-messages">
                 {selectedMoment.chatHistory.map((message, index) => (
+                  // <div
+                  //   key={index}
+                  //   className={`history_message ${
+                  //     message.isUser ? "user" : "bot"
+                  //   }`}
+                  // >
+                  //   {message.text}
+                  // </div>
                   <div
                     key={index}
                     className={`history_message ${
                       message.isUser ? "user" : "bot"
                     }`}
                   >
-                    {message.text}
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {message.text}
+                    </ReactMarkdown>
                   </div>
                 ))}
                 {selectedMoment.isTyping && (
