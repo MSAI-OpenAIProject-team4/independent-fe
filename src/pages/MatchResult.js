@@ -19,8 +19,16 @@ const MatchResult = () => {
                 const capturedImage = location.state?.capturedImage;
                 console.log('전송할 이미지:', capturedImage ? '이미지 있음' : '이미지 없음');
                 
+                if (!capturedImage) {
+                    throw new Error('이미지가 없습니다.');
+                }
+
+                if (!capturedImage.startsWith('data:image')) {
+                    throw new Error('올바른 이미지 형식이 아닙니다.');
+                }
+
                 const response = await axios.post('http://20.84.89.102/api/compare/', {
-                    image: capturedImage || 'test_image'
+                    image: capturedImage
                 }, {
                     headers: {
                         'Content-Type': 'application/json',
@@ -28,28 +36,19 @@ const MatchResult = () => {
                 });
 
                 console.log('서버 응답 전체:', response);
-                
-                // NaN을 null로 변환하는 함수
-                const convertNaNToNull = (str) => {
-                    return str.replace(/"([^"]+)":\s*NaN/g, '"$1": null');
-                };
 
-                // 응답이 문자열인 경우 JSON으로 파싱
-                let responseData;
-                if (typeof response.data === 'string') {
+                let responseData = response.data;
+
+                // 문자열이면 JSON 파싱 시도
+                if (typeof responseData === 'string') {
                     try {
-                        // NaN을 null로 변환하여 파싱
-                        const cleanedData = convertNaNToNull(response.data);
-                        responseData = JSON.parse(cleanedData);
-                        console.log('파싱된 응답 데이터:', responseData);
+                        responseData = JSON.parse(responseData);
                     } catch (parseError) {
                         console.error('JSON 파싱 에러:', parseError);
                         throw new Error('서버 응답을 처리할 수 없습니다.');
                     }
-                } else {
-                    responseData = response.data;
                 }
-                
+
                 if (isMounted) {
                     if (responseData.error) {
                         console.error('서버 에러:', responseData.error);
@@ -186,8 +185,9 @@ const MatchResult = () => {
                 메뉴
             </button>
             <h2 className="match-title">{matchResult.matchedFighter.name}님과 연결되었습니다</h2>
-            <p className="similarity">유사도: {matchResult.similarity ? `${(matchResult.similarity * 100).toFixed(1)}%` : 'NaN%'}</p>
-            
+            <p className="similarity">
+                유사도: {matchResult.similarity ? `${(matchResult.similarity * 100).toFixed(1)}%` : 'NaN%'}
+            </p>
             <div className="image-comparison">
                 <div className="user-image">
                     <img src={location.state?.capturedImage} alt="사용자" />
@@ -204,7 +204,6 @@ const MatchResult = () => {
                     />
                 </div>
             </div>
-
             <button className="next-button" onClick={handleNextClick}>
                 다음
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -215,4 +214,4 @@ const MatchResult = () => {
     );
 };
 
-export default MatchResult; 
+export default MatchResult;
