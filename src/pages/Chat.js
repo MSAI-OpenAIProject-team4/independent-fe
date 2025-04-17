@@ -14,11 +14,11 @@ function Chat({ language, onLanguageChange }) {
   const messagesEndRef = useRef(null);
   const [messages, setMessages] = useState([
     {
-      text: matchedFighter 
+      text: matchedFighter
         ? `안녕하시오! 저는 ${matchedFighter.name}이오. 제가 걸어온 독립운동의 길에 대해 무엇이든 물어보시오.`
         : "안녕하세요! 저는 독립운동가들의 이야기를 전해드리는 이야기꾼입니다. 어떤 독립운동가의 이야기가 궁금하신가요?",
       isUser: false,
-      isInitialGreeting: true
+      isInitialGreeting: true,
     },
   ]);
   const [translatedMessages, setTranslatedMessages] = useState([]);
@@ -224,33 +224,33 @@ function Chat({ language, onLanguageChange }) {
       // 매칭된 인물이 없고, 첫 메시지인 경우 (인물 검색)
       if (!matchedFighter && messages.length === 1) {
         const response = await axios.post(
-          'https://independent.eastus.cloudapp.azure.com/api/chat/',
+          "https://independent.eastus.cloudapp.azure.com/api/chat/",
           {
             question: inputMessage,
             language: language,
             matchedFighter: null,
-            isNarrator: true  // 나레이터 모드임을 백엔드에 알림
+            isNarrator: true, // 나레이터 모드임을 백엔드에 알림
           },
           {
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
           }
         );
 
         if (response.data && response.data.matchedFighter) {
           // 인물이 매칭된 경우
-          const botMessage = { 
-            text: "독립운동가를 찾았습니다. 이제부터 그분의 이야기를 들려드리겠습니다.", 
-            isUser: false 
+          const botMessage = {
+            text: "독립운동가를 찾았습니다. 이제부터 그분의 이야기를 들려드리겠습니다.",
+            isUser: false,
           };
           setMessages((prev) => [...prev, botMessage]);
           // 여기서는 navigate하지 않고 현재 페이지에서 계속 진행
         } else {
           // 인물이 매칭되지 않은 경우
-          const botMessage = { 
-            text: "죄송합니다. 해당하는 독립운동가를 찾을 수 없습니다. 다른 독립운동가의 이름을 말씀해주시겠어요?", 
-            isUser: false 
+          const botMessage = {
+            text: "죄송합니다. 해당하는 독립운동가를 찾을 수 없습니다. 다른 독립운동가의 이름을 말씀해주시겠어요?",
+            isUser: false,
           };
           setMessages((prev) => [...prev, botMessage]);
         }
@@ -258,24 +258,27 @@ function Chat({ language, onLanguageChange }) {
         // 일반적인 대화 진행
         const response = await axios.post(
           'https://independent.eastus.cloudapp.azure.com/api/chat/',
+
           {
             question: inputMessage,
             language: language,
-            matchedFighter: matchedFighter ? {
-              name: matchedFighter.name,
-              nameHanja: matchedFighter.nameHanja,
-              movementFamily: matchedFighter.movementFamily,
-              orders: matchedFighter.orders,
-              addressBirth: matchedFighter.addressBirth,
-              activities: matchedFighter.activities,
-              content: matchedFighter.content,
-              references: matchedFighter.references
-            } : null,
-            isNarrator: !matchedFighter  // 매칭된 인물이 없으면 나레이터 모드
+            matchedFighter: matchedFighter
+              ? {
+                  name: matchedFighter.name,
+                  nameHanja: matchedFighter.nameHanja,
+                  movementFamily: matchedFighter.movementFamily,
+                  orders: matchedFighter.orders,
+                  addressBirth: matchedFighter.addressBirth,
+                  activities: matchedFighter.activities,
+                  content: matchedFighter.content,
+                  references: matchedFighter.references,
+                }
+              : null,
+            isNarrator: !matchedFighter, // 매칭된 인물이 없으면 나레이터 모드
           },
           {
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
           }
         );
@@ -283,12 +286,14 @@ function Chat({ language, onLanguageChange }) {
         if (response.data && response.data.answer) {
           const botMessage = { text: response.data.answer, isUser: false };
           setMessages((prev) => [...prev, botMessage]);
-          
+
           if (response.data.citations && response.data.citations.length > 0) {
-            const formattedCitations = response.data.citations.map((citation, idx) => ({
-              title: `참고 ${idx + 1}`,
-              content: `${citation.title}\n${citation.reference}`
-            }));
+            const formattedCitations = response.data.citations.map(
+              (citation, idx) => ({
+                title: `참고 ${idx + 1}`,
+                content: `${citation.title}\n${citation.reference}`,
+              })
+            );
             setCaptions(formattedCitations);
           }
         } else {
@@ -297,11 +302,11 @@ function Chat({ language, onLanguageChange }) {
       }
     } catch (error) {
       console.error("API 오류:", error);
-      const errorMessage = { 
+      const errorMessage = {
         text: matchedFighter
           ? "죄송하오. 답변 중에 오류가 발생했소. 다시 한 번 질문해 주시겠소?"
-          : "죄송합니다. 답변 중에 오류가 발생했습니다. 다시 한 번 질문해 주시겠어요?", 
-        isUser: false 
+          : "죄송합니다. 답변 중에 오류가 발생했습니다. 다시 한 번 질문해 주시겠어요?",
+        isUser: false,
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
@@ -311,8 +316,11 @@ function Chat({ language, onLanguageChange }) {
 
   useEffect(() => {
     if (matchedFighter?.image_url) {
-      console.log('Setting fighter image:', matchedFighter.image_url);
-      document.documentElement.style.setProperty('--fighter-image', `url("${matchedFighter.image_url}")`);
+      console.log("Setting fighter image:", matchedFighter.image_url);
+      document.documentElement.style.setProperty(
+        "--fighter-image",
+        `url("${matchedFighter.image_url}")`
+      );
     }
   }, [matchedFighter]);
 
@@ -322,14 +330,20 @@ function Chat({ language, onLanguageChange }) {
       <div className="chat-container">
         <div className="chat-header">
           <h1>독립운동가와의 대화</h1>
-          <p className="chat-ai-warning">※ AI는 실수할 수 있으며, 제공되는 정보는 참고용으로만 사용해주세요.</p>
+          <p className="chat-ai-warning">
+            ※ AI는 실수할 수 있으며, 제공되는 정보는 참고용으로만 사용해주세요.
+          </p>
         </div>
         <div className="messages">
           {translatedMessages.map((message, index) => (
             <div
               key={index}
               className={`message ${message.isUser ? "user" : "bot"} ${
-                !message.isUser ? (matchedFighter ? "matched-avatar" : "default-avatar") : ""
+                !message.isUser
+                  ? matchedFighter
+                    ? "matched-avatar"
+                    : "default-avatar"
+                  : ""
               }`}
             >
               {message.text}
@@ -337,9 +351,7 @@ function Chat({ language, onLanguageChange }) {
           ))}
           {isLoading && isSearching && (
             <div className="message bot">
-              <div className="typing-indicator">
-                문서를 읽고 있습니다...
-              </div>
+              <div className="typing-indicator">문서를 읽고 있습니다...</div>
             </div>
           )}
           <div ref={messagesEndRef} />
