@@ -258,6 +258,7 @@ function Chat({ language, onLanguageChange }) {
         // 일반적인 대화 진행
         const response = await axios.post(
           "https://independent.eastus.cloudapp.azure.com/api/chat/",
+          // "http://20.84.89.102/api/chat",
 
           {
             question: inputMessage,
