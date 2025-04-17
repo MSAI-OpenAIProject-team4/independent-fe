@@ -187,6 +187,7 @@
 }
 
 .history_message {
+  white-space: pre-wrap;
   display: inline-block; /* 콘텐츠에 맞게 늘어남 */
   max-width: 70%; /* 너비 제한: 필요에 따라 조정 */
   margin-bottom: 1rem;
@@ -312,7 +313,7 @@
   color: white;
   font-weight: bold;
   cursor: pointer;
-  font-family: 'PAK YONG JUN', sans-serif;
+  font-family: "PAK YONG JUN", sans-serif;
 }
 
 .test-quiz-button:hover {

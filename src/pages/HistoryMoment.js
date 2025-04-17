@@ -6,8 +6,8 @@ import QuizModal from "../components/QuizModal";
 import { translateText } from "../translations/translator";
 
 function HistoryMoment({ language = "ko", onLanguageChange }) {
-    const navigate = useNavigate();
-    const [selectedMoment, setSelectedMoment] = useState(null);
+  const navigate = useNavigate();
+  const [selectedMoment, setSelectedMoment] = useState(null);
   // 번역된 moment를 별도로 관리 (title, description, historicalContext)
   const [translatedMoment, setTranslatedMoment] = useState(null);
   const [showQuiz, setShowQuiz] = useState(false);
@@ -100,7 +100,9 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
     // 시스템 프롬프트: 모델의 역할을 지정
     const systemPrompt = {
       role: "system",
-      content: LLMgame_prompt,
+      content:
+        "Markdown이 있다면 이를 반영해서 chat을 return 해줘. 즉, 예를 들어 bold의 경우 **인 채로 두지 말고 굵게 해서 return 해줘" +
+        LLMgame_prompt,
     };
 
     // chatHistory를 Azure Open AI가 요구하는 형식으로 변환
