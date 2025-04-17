@@ -4,10 +4,12 @@ import "../styles/HistoryMoment.css";
 import MenuComponent from "../components/MenuComponent";
 import QuizModal from "../components/QuizModal";
 import { translateText } from "../translations/translator";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 function HistoryMoment({ language = "ko", onLanguageChange }) {
-    const navigate = useNavigate();
-    const [selectedMoment, setSelectedMoment] = useState(null);
+  const navigate = useNavigate();
+  const [selectedMoment, setSelectedMoment] = useState(null);
   // 번역된 moment를 별도로 관리 (title, description, historicalContext)
   const [translatedMoment, setTranslatedMoment] = useState(null);
   const [showQuiz, setShowQuiz] = useState(false);
@@ -73,7 +75,7 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
     방식 1 : 너는 일본 재판관이며, 1909년대 말투와 문체로 심문을 진행해야 한다.
     방식 2 : 각 단계에서 다음 순서로 응답한다:
       - 일본 법정 분위기 묘사와 일본 재판관의 판결  
-      - 사용자가 입력할 수 있는 예시 답변 3개 제시  
+      - 사용자가 입력할 수 있는 예시 답변 3개 제시, 그 외의 답변도 수용할 수 있어야 해.
       - 반드시 폭력성이 없는, 완곡한 표현만 사용  
     방식 3 : 사용자 입력 유도  
     방식 4 : 사용자의 진술이 정당성을 주장하거나 평화적 의도를 담고 있다면 재판관은 그에 맞는 형을 집행한다(무죄도 가능)
@@ -100,7 +102,9 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
     // 시스템 프롬프트: 모델의 역할을 지정
     const systemPrompt = {
       role: "system",
-      content: LLMgame_prompt,
+      content:
+        "Markdown이 있다면 이를 반영해서 chat을 return 해줘. 즉, 예를 들어 bold의 경우 **인 채로 두지 말고 굵게 해서 return 해줘" +
+        LLMgame_prompt,
     };
 
     // chatHistory를 Azure Open AI가 요구하는 형식으로 변환
@@ -293,13 +297,23 @@ function HistoryMoment({ language = "ko", onLanguageChange }) {
             <div className="history_chat-container">
               <div className="history_chat-messages">
                 {selectedMoment.chatHistory.map((message, index) => (
+                  // <div
+                  //   key={index}
+                  //   className={`history_message ${
+                  //     message.isUser ? "user" : "bot"
+                  //   }`}
+                  // >
+                  //   {message.text}
+                  // </div>
                   <div
                     key={index}
                     className={`history_message ${
                       message.isUser ? "user" : "bot"
                     }`}
                   >
-                    {message.text}
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {message.text}
+                    </ReactMarkdown>
                   </div>
                 ))}
                 {selectedMoment.isTyping && (
