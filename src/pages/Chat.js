@@ -16,7 +16,7 @@ function Chat({ language, onLanguageChange }) {
     {
       text: matchedFighter 
         ? `안녕하시오! 저는 ${matchedFighter.name}이오. 제가 걸어온 독립운동의 길에 대해 무엇이든 물어보시오.`
-        : "안녕하세요! 저는 독립운동가들의 이야기를 전해드리는 꼬꼬무 스타일의 이야기꾼입니다. 어떤 독립운동가의 이야기가 궁금하신가요?",
+        : "안녕하세요! 저는 독립운동가들의 이야기를 전해드리는 이야기꾼입니다. 어떤 독립운동가의 이야기가 궁금하신가요?",
       isUser: false,
       isInitialGreeting: true
     },
@@ -257,7 +257,7 @@ function Chat({ language, onLanguageChange }) {
       } else {
         // 일반적인 대화 진행
         const response = await axios.post(
-          'http://20.84.89.102/api/chat/',
+          'https://independent.eastus.cloudapp.azure.com/api/chat/',
           {
             question: inputMessage,
             language: language,
